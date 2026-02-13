@@ -27,5 +27,6 @@ app.get("/health", (req, res) => {
 app.use("/auth", require("./modules/auth/auth.routes"));
 app.use("/users", require("./modules/users/users.routes"));
 app.use("/admin", require("./modules/admin/admin.routes"));
+app.use("/pickups", require("./modules/pickups/pickups.routes"));
 module.exports = app;
 
