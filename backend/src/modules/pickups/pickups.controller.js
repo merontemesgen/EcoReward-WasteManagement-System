@@ -18,6 +18,7 @@ exports.createPickup = async (req, res) => {
     estimated_kg: value.estimated_kg,
     status: "REQUESTED"
   });
+  
 
   return res.status(201).json(pickup);
 };
@@ -31,4 +32,35 @@ exports.listMyPickups = async (req, res) => {
   return res.json(pickups);
 };
 //console.log(Object.keys(require("../../../models")));
+exports.listAvailablePickups = async (req, res) => {
+  const pickups = await Pickup.findAll({
+    where: { status: "REQUESTED" },
+    order: [["createdAt", "ASC"]]
+  });
+  res.json(pickups);
+};
+
+exports.listAllPickups = async (req, res) => {
+  const pickups = await Pickup.findAll({
+    order: [["createdAt", "DESC"]]
+  });
+  res.json(pickups);
+};
+exports.assignPickup = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+
+  if (!pickup) {
+    return res.status(404).json({ message: "Pickup not found" });
+  }
+
+  if (pickup.status !== "REQUESTED") {
+    return res.status(400).json({ message: "Pickup cannot be assigned" });
+  }
+
+  pickup.status = "ASSIGNED";
+  await pickup.save();
+
+  res.json(pickup);
+};
+
 
