@@ -49,12 +49,16 @@ exports.listAllPickups = async (req, res) => {
 exports.assignPickup = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
 
-  if (!pickup) {
-    return res.status(404).json({ message: "Pickup not found" });
-  }
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
 
   if (pickup.status !== "REQUESTED") {
     return res.status(400).json({ message: "Pickup cannot be assigned" });
+  }
+
+  // if a COLLECTOR assigns, assign to themselves
+  // if ADMIN assigns, allow passing collector_id optionally later; for now assign to admin? NO.
+  if (req.user.role === "COLLECTOR") {
+    pickup.collector_id = req.user.id;
   }
 
   pickup.status = "ASSIGNED";
@@ -62,5 +66,6 @@ exports.assignPickup = async (req, res) => {
 
   res.json(pickup);
 };
+
 
 

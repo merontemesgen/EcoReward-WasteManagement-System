@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Pickup.init({
     citizen_id: DataTypes.INTEGER,
+    collector_id: DataTypes.INTEGER,
     address: DataTypes.STRING,
     waste_type: DataTypes.STRING,
     estimated_kg: DataTypes.FLOAT,
