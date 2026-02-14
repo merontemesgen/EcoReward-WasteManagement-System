@@ -66,6 +66,48 @@ exports.assignPickup = async (req, res) => {
 
   res.json(pickup);
 };
+exports.markCollected = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  // ownership check
+  if (pickup.collector_id !== req.user.id) {
+    return res.status(403).json({ message: "Not your assigned pickup" });
+  }
+
+  // status check
+  if (pickup.status !== "ASSIGNED") {
+    return res.status(400).json({ message: "Pickup must be ASSIGNED to mark as COLLECTED" });
+  }
+
+  pickup.status = "COLLECTED";
+  await pickup.save();
+
+  return res.json(pickup);
+};
+
+exports.markDelivered = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  // ownership check
+  if (pickup.collector_id !== req.user.id) {
+    return res.status(403).json({ message: "Not your assigned pickup" });
+  }
+
+  // status check
+  if (pickup.status !== "COLLECTED") {
+    return res.status(400).json({ message: "Pickup must be COLLECTED to mark as DELIVERED" });
+  }
+
+  pickup.status = "DELIVERED";
+  await pickup.save();
+
+  return res.json(pickup);
+};
+
 
 
 

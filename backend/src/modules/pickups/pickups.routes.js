@@ -16,6 +16,21 @@ router.patch(
   requireRole("ADMIN", "COLLECTOR"),
   assignPickup
 );
+const { markCollected, markDelivered } = require("./pickups.controller");
+
+router.patch(
+  "/:id/collect",
+  auth,
+  requireRole("COLLECTOR"),
+  markCollected
+);
+
+router.patch(
+  "/:id/deliver",
+  auth,
+  requireRole("COLLECTOR"),
+  markDelivered
+);
 
 
 router.post("/", auth, requireRole("CITIZEN"), createPickup);
