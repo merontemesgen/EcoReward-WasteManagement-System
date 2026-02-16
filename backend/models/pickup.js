@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     address: DataTypes.STRING,
     waste_type: DataTypes.STRING,
     estimated_kg: DataTypes.FLOAT,
+    recycling_center_id: DataTypes.INTEGER,
+    material_type: DataTypes.STRING,
+    unit_name: DataTypes.STRING,
+    unit_count: DataTypes.INTEGER,
+    unit_price_snapshot: DataTypes.DECIMAL(10, 2),
+    calculated_payout: DataTypes.DECIMAL(10, 2),
     status: DataTypes.STRING
   }, {
     sequelize,

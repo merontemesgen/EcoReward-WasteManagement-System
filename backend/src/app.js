@@ -28,5 +28,6 @@ app.use("/auth", require("./modules/auth/auth.routes"));
 app.use("/users", require("./modules/users/users.routes"));
 app.use("/admin", require("./modules/admin/admin.routes"));
 app.use("/pickups", require("./modules/pickups/pickups.routes"));
+app.use("/pricing", require("./modules/pricing/pricing.routes"));
 module.exports = app;
 

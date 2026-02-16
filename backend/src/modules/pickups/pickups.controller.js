@@ -1,10 +1,15 @@
 const Joi = require("joi");
-const { Pickup } = require("../../../models");
+const { Pickup, UnitPrice } = require("../../../models");
 
 const createSchema = Joi.object({
-  address: Joi.string().min(5).required(),
-  waste_type: Joi.string().min(2).required(),
+  address: Joi.string().required(),
+  waste_type: Joi.string().required(),
   estimated_kg: Joi.number().positive().required()
+});
+
+const settleSchema = Joi.object({
+  material_type: Joi.string().required(),
+  unit_count: Joi.number().integer().positive().required()
 });
 
 exports.createPickup = async (req, res) => {
@@ -107,6 +112,89 @@ exports.markDelivered = async (req, res) => {
 
   return res.json(pickup);
 };
+exports.settlePickup = 
+
+async (req, res) => {
+  const { error, value } = settleSchema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.message });
+
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  if (pickup.status !== "DELIVERED") {
+    return res.status(400).json({ message: "Pickup must be DELIVERED to settle" });
+  }
+
+  const rate = await UnitPrice.findOne({
+    where: { material_type: value.material_type, is_active: true }
+  });
+
+  if (!rate) return res.status(404).json({ message: "No active unit price for this material_type" });
+
+  const unitPrice = Number(rate.unit_price);
+  const payout = unitPrice * value.unit_count;
+
+  await pickup.update({
+  recycling_center_id: req.user.id,
+  material_type: value.material_type,
+  unit_name: rate.unit_name,
+  unit_count: value.unit_count,
+  unit_price_snapshot: unitPrice,
+  calculated_payout: payout,
+  status: "TRANSFERRED"
+});
+
+
+  return res.json({
+    pickup_id: pickup.id,
+    unit_rate: unitPrice,
+    unit_name: rate.unit_name,
+    quantity: value.unit_count,
+    payout,
+    status: pickup.status
+  });
+};
+exports.getPickupById = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  // Admin can view any pickup
+  if (req.user.role === "ADMIN") return res.json(pickup);
+
+  // Collector can view pickups assigned to them
+  if (req.user.role === "COLLECTOR") {
+    if (pickup.collector_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    return res.json(pickup);
+  }
+
+  // Citizen can view their own pickups
+  if (req.user.role === "CITIZEN") {
+    if (pickup.citizen_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    return res.json(pickup);
+  }
+
+  return res.status(403).json({ message: "Forbidden" });
+};
+exports.markReceived = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  if (pickup.status !== "TRANSFERRED") {
+    return res.status(400).json({ message: "Pickup must be TRANSFERRED to mark as RECEIVED" });
+  }
+
+  await pickup.update({ status: "RECEIVED" });
+
+  return res.json(pickup);
+};
+
+
+
+
 
 
 
