@@ -41,6 +41,8 @@ router.patch(
 );
 const { getPickupById } = require("./pickups.controller");
 const { markReceived } = require("./pickups.controller");
+const { markPaid } = require("./pickups.controller");
+const { listMyAssignedPickups } = require("./pickups.controller");
 
 
 router.get("/:id", auth, getPickupById);
@@ -49,6 +51,18 @@ router.patch(
   auth,
   requireRole("ADMIN"),
   markReceived
+);
+router.patch(
+  "/:id/pay",
+  auth,
+  requireRole("ADMIN"),
+  markPaid
+);
+router.get(
+  "/assigned/me",
+  auth,
+  requireRole("COLLECTOR"),
+  listMyAssignedPickups
 );
 
 

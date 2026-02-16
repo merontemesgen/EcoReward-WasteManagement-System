@@ -191,6 +191,38 @@ exports.markReceived = async (req, res) => {
 
   return res.json(pickup);
 };
+exports.markPaid = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  if (pickup.status !== "RECEIVED") {
+    return res.status(400).json({ message: "Pickup must be RECEIVED to mark as PAID" });
+  }
+
+  // optional safety check: must have payout calculated
+  if (!pickup.calculated_payout || Number(pickup.calculated_payout) <= 0) {
+    return res.status(400).json({ message: "Cannot mark PAID without a valid payout" });
+  }
+
+  await pickup.update({ status: "PAID" });
+
+  return res.json(pickup);
+};
+exports.listMyAssignedPickups = async (req, res) => {
+  const where = { collector_id: req.user.id };
+
+  //optional filter:active= true
+  if (req.query.active==="true") {
+    where.status = ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"];
+  }
+  const pickups = await Pickup.findAll({
+    where,
+    order: [["updatedAt", "DESC"]]
+  });
+
+  return res.json(pickups);
+};
+
 
 
 
