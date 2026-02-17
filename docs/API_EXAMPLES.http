@@ -1,0 +1,175 @@
+baseUrl= http://localhost:4000
+
+HEALTH CHECK: GET {{baseUrl}}/health  
+
+1) AUTH_REGISTER
+
+
+### Register Citizen (default role = CITIZEN)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Citizen One",
+  "email": "citizen1@mail.com",
+  "password": "password123"
+}
+
+### Register Collector (will still register as CITIZEN, then you promote in DB)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Collector One",
+  "email": "collector1@mail.com",
+  "password": "password123"
+}
+
+
+2) AUTH - LOGIN
+
+### Login Citizen (copy token into @citizenToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "citizen1@mail.com",
+  "password": "password123"
+}
+
+### Login Admin (only works AFTER you set role=ADMIN in DB for that user)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@mail.com",
+  "password": "password123"
+}
+
+### Login Collector (only works AFTER you set role=COLLECTOR in DB for that user)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "collector1@mail.com",
+  "password": "password123"
+}
+
+
+ 3) TOKENS (PASTE YOUR JWTs HERE)
+
+@citizenToken =  token
+@adminToken   = token
+@collectorToken =  token
+
+
+ 4) USERS
+
+
+### Who am I? (Citizen)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{citizenToken}}
+
+### Who am I? (Admin)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{adminToken}}
+
+### Who am I? (Collector)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{collectorToken}}
+
+
+5) PICKUPS - CITIZEN
+
+
+### Create Pickup (Citizen)
+POST {{baseUrl}}/pickups
+Content-Type: application/json
+Authorization: Bearer {{citizenToken}}
+
+{
+  "address": "Nairobi CBD, Moi Avenue",
+  "waste_type": "Plastic",
+  "estimated_kg": 2.5
+}
+
+### Create Pickup (Citizen) - another sample
+POST {{baseUrl}}/pickups
+Content-Type: application/json
+Authorization: Bearer {{citizenToken}}
+
+{
+  "address": "Westlands",
+  "waste_type": "Glass",
+  "estimated_kg": 3
+}
+
+### List My Pickups (Citizen)
+GET {{baseUrl}}/pickups/mine
+Authorization: Bearer {{citizenToken}}
+
+
+6) PICKUPS - ADMIN / COLLECTOR
+
+
+### Available Pickups (Admin)
+GET {{baseUrl}}/pickups/available
+Authorization: Bearer {{adminToken}}
+
+### Available Pickups (Collector)
+GET {{baseUrl}}/pickups/available
+Authorization: Bearer {{collectorToken}}
+
+### Available Pickups (Citizen) - should be 403 Forbidden
+GET {{baseUrl}}/pickups/available
+Authorization: Bearer {{citizenToken}}
+
+
+7) PICKUPS - ASSIGNMENT
+
+
+### Assign Pickup (Admin) - replace :id
+PATCH {{baseUrl}}/pickups/3/assign
+Authorization: Bearer {{adminToken}}
+
+### Assign Pickup (Collector) - sets collector_id to this collector
+PATCH {{baseUrl}}/pickups/3/assign
+Authorization: Bearer {{collectorToken}}
+
+### Assign Pickup (Citizen) - should be 403 Forbidden
+PATCH {{baseUrl}}/pickups/3/assign
+Authorization: Bearer {{citizenToken}}
+
+
+8) PICKUPS - STATUS TRANSITIONS (COLLECTOR ONLY)
+
+### NOTE:
+### - /collect requires status ASSIGNED
+### - /deliver requires status COLLECTED
+### - ownership enforced: collector_id must match the token user id
+
+### Mark COLLECTED (Collector)
+PATCH {{baseUrl}}/pickups/3/collect
+Authorization: Bearer {{collectorToken}}
+
+### Mark DELIVERED (Collector)
+PATCH {{baseUrl}}/pickups/3/deliver
+Authorization: Bearer {{collectorToken}}
+
+### Negative: Deliver before Collect (should be 400)
+PATCH {{baseUrl}}/pickups/3/deliver
+Authorization: Bearer {{collectorToken}}
+
+### Negative: Collector tries to change pickup they don't own (should be 403)
+### (Only meaningful if pickup 3 is assigned to a different collector_id)
+PATCH {{baseUrl}}/pickups/3/collect
+Authorization: Bearer {{collectorToken}}
+
+
+9) OPTIONAL: ADMIN DASHBOARD (IF YOU ADDED IT)
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Negative: Citizen to admin dashboard (should be 403)
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{citizenToken}}
