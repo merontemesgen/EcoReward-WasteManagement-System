@@ -187,9 +187,16 @@ exports.markReceived = async (req, res) => {
     return res.status(400).json({ message: "Pickup must be TRANSFERRED to mark as RECEIVED" });
   }
 
+  //settlement must exist before marking received; this is a safety check, normally should not fail if workflow is followed
+  if (!pickup.calculated_payout || !pickup.unit_count || !pickup.unit_price_snapshot) {
+  return res.status(400).json({ message: "Pickup must be settled before marking as RECEIVED" });
+}
+
+
   await pickup.update({ status: "RECEIVED" });
 
   return res.json(pickup);
+  
 };
 exports.markPaid = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
