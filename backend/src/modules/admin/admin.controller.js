@@ -36,3 +36,18 @@ exports.getMetrics = async (req, res) => {
     total_estimated_kg: Number(total_estimated_kg || 0)
   });
 };
+exports.getRecentPickups = async (req, res) => {
+  const rows = await Pickup.findAll({
+    attributes: [
+      "id",
+      "address",
+      "status",
+      "calculated_payout",
+      "updatedAt"
+    ],
+    order: [["updatedAt", "DESC"]],
+    limit: 10
+  });
+
+  return res.json(rows);
+};

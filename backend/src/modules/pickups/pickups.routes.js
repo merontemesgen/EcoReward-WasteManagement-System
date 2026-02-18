@@ -9,7 +9,8 @@ const {
 } = require("./pickups.controller");
 
 const { assignPickup } = require("./pickups.controller");
-
+const { listMyPickupsSummary } = require("./pickups.controller");
+const { listMyAssignedPickupsSummary } = require("./pickups.controller");
 router.patch(
   "/:id/assign",
   auth,
@@ -61,6 +62,8 @@ router.get(
   requireRole("COLLECTOR"),
   listMyAssignedPickups
 );
+router.get("/mine/summary", auth, requireRole("CITIZEN"), listMyPickupsSummary);
+router.get("/assigned/me/summary", auth, requireRole("COLLECTOR"), listMyAssignedPickupsSummary);
 
 router.get("/:id", auth, getPickupById);
 router.patch(

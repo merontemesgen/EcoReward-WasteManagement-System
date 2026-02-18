@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const { Pickup, UnitPrice } = require("../../../models");
-
+const {Op} = require("sequelize");
 const createSchema = Joi.object({
   address: Joi.string().required(),
   waste_type: Joi.string().required(),
@@ -11,6 +11,9 @@ const settleSchema = Joi.object({
   material_type: Joi.string().required(),
   unit_count: Joi.number().integer().positive().required()
 });
+
+
+
 
 exports.createPickup = async (req, res) => {
   const { error, value } = createSchema.validate(req.body);
@@ -219,9 +222,26 @@ exports.listMyAssignedPickups = async (req, res) => {
   const where = { collector_id: req.user.id };
 
   //optional filter:active= true
-  if (req.query.active==="true") {
-    where.status = ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"];
-  }
+  
+
+if (req.query.active === "true") {
+  where[Op.and] = [
+    { status: ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"] },
+    {
+      [Op.or]: [
+        // allow normal in-progress work
+        { status: ["ASSIGNED", "COLLECTED", "DELIVERED"] },
+
+        // for settlement states, require payout exists
+        {
+          status: ["TRANSFERRED", "RECEIVED"],
+          calculated_payout: { [Op.ne]: null }
+        }
+      ]
+    }
+  ];
+}
+
   const pickups = await Pickup.findAll({
     where,
     order: [["updatedAt", "DESC"]]
@@ -259,6 +279,38 @@ exports.cancelPickup = async (req, res) => {
   return res.json(pickup);
 };
 
+const pickupSummaryFields = [
+  "id",
+  "address",
+  "waste_type",
+  "status",
+  "unit_count",
+  "calculated_payout",
+  "updatedAt",
+  "createdAt"
+];
+
+exports.listMyPickupsSummary = async (req, res) => {
+  const rows = await Pickup.findAll({
+    where: { citizen_id: req.user.id },
+    attributes: pickupSummaryFields,
+    order: [["updatedAt", "DESC"]]
+  });
+  return res.json(rows);
+};
+
+exports.listMyAssignedPickupsSummary = async (req, res) => {
+  const where = { collector_id: req.user.id };
+  if (req.query.active === "true") {
+    where.status = ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"];
+  }
+  const rows = await Pickup.findAll({
+    where,
+    attributes: pickupSummaryFields,
+    order: [["updatedAt", "DESC"]]
+  });
+  return res.json(rows);
+};
 
 
 
