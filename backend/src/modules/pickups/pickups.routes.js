@@ -43,7 +43,7 @@ const { getPickupById } = require("./pickups.controller");
 const { markReceived } = require("./pickups.controller");
 const { markPaid } = require("./pickups.controller");
 const { listMyAssignedPickups } = require("./pickups.controller");
-
+const {cancelPickup} = require("./pickups.controller");
 
 router.get("/:id", auth, getPickupById);
 router.patch(
@@ -64,6 +64,7 @@ router.get(
   requireRole("COLLECTOR"),
   listMyAssignedPickups
 );
+router.patch("/:id/cancel", auth, cancelPickup);
 
 
 

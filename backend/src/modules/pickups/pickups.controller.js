@@ -229,6 +229,35 @@ exports.listMyAssignedPickups = async (req, res) => {
 
   return res.json(pickups);
 };
+exports.cancelPickup = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  // CITIZEN: can cancel only own pickup, only when REQUESTED
+  if (req.user.role === "CITIZEN") {
+    if (pickup.citizen_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    if (pickup.status !== "REQUESTED") {
+      return res.status(400).json({ message: "Only REQUESTED pickups can be cancelled by citizen" });
+    }
+  }
+
+  // ADMIN: can cancel REQUESTED or ASSIGNED
+  if (req.user.role === "ADMIN") {
+    if (!["REQUESTED", "ASSIGNED"].includes(pickup.status)) {
+      return res.status(400).json({ message: "Only REQUESTED or ASSIGNED pickups can be cancelled by admin" });
+    }
+  }
+
+  // other roles cannot cancel
+  if (!["CITIZEN", "ADMIN"].includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await pickup.update({ status: "CANCELLED" });
+  return res.json(pickup);
+};
 
 
 
