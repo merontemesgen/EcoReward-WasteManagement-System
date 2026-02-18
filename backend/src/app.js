@@ -1,8 +1,22 @@
 const cors=require("cors");
 const express = require("express");
 const app = express();
+const rateLimit = require("express-rate-limit");
+
 
 app.use(express.json());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 login attempts per IP
+  message: { message: "Too many requests, try again later" }
+});
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200
+});
+
+app.use("/api/v1", apiLimiter);
 
 const allowedOrigins = ["http://localhost:3000", "http://ecoreward.vercel.app"];
 app.use(
@@ -30,6 +44,12 @@ app.use("/api/v1/admin", require("./modules/admin/admin.routes"));
 app.use("/api/v1/pickups", require("./modules/pickups/pickups.routes"));
 app.use("/api/v1/sme", require("./modules/sme/sme.routes"));
 app.use("/api/v1/pricing", require("./modules/pricing/pricing.routes"));
+app.use("/api/v1/auth", authLimiter, require("./modules/auth/auth.routes"));
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: "Internal server error" });
+});
+
 
 module.exports = app;
 
