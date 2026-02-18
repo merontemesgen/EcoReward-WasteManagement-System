@@ -480,13 +480,13 @@ calculated_payout
 
 recycling_center_id
 
-PATCH /sme/pickups/:id/receive
+PATCH/api/v1/sme/pickups/:id/receive
 
 Role: ADMIN
 TRANSFERRED → RECEIVED
 Requires settlement fields to exist
 
-PATCH /sme/pickups/:id/pay
+PATCH/api/v1/sme/pickups/:id/pay
 
 Role: ADMIN
 RECEIVED → PAID
