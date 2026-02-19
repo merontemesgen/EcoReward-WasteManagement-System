@@ -28,14 +28,28 @@ exports.getMetrics = async (req, res) => {
   });
 
   const total_estimated_kg = await Pickup.sum("estimated_kg");
+  const total_ledger_entries = await LedgerEntry.count();
+
+  const total_credit_amount = await LedgerEntry.sum("amount", {
+  where: { entry_type: "CREDIT" }
+});
+
+const total_paid_pickups = await Pickup.count({
+  where: { status: "PAID" }
+});
+
 
   return res.json({
     total_pickups,
     counts_by_status,
     total_paid_payout: Number(total_paid_payout || 0),
     total_transferred_payout: Number(total_transferred_payout || 0),
-    total_estimated_kg: Number(total_estimated_kg || 0)
+    total_estimated_kg: Number(total_estimated_kg || 0),
+    total_paid_pickups,
+    total_ledger_entries,
+    total_credit_amount: Number(total_credit_amount || 0)
   });
+  
 };
 exports.getRecentPickups = async (req, res) => {
   const rows = await Pickup.findAll({

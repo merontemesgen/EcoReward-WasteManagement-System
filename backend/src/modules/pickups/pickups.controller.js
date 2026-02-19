@@ -208,11 +208,13 @@ exports.markPaid = async (req, res) => {
   if (pickup.status !== "RECEIVED") {
     return res.status(400).json({ message: "Pickup must be RECEIVED to mark as PAID" });
   }
-
+  
   // optional safety check: must have payout calculated
   if (!pickup.calculated_payout || Number(pickup.calculated_payout) <= 0) {
     return res.status(400).json({ message: "Cannot mark PAID without a valid payout" });
   }
+  const existing = await LedgerEntry.findOne({ where: { pickup_id: pickup.id } });
+  if (existing) return res.status(409).json({ message: "Pickup already paid" });
 
   await pickup.update({ status: "PAID" });
   await LedgerEntry.create({
