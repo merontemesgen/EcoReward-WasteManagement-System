@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { Pickup, UnitPrice } = require("../../../models");
+const { Pickup, UnitPrice, LedgerEntry } = require("../../../models");
 const {Op} = require("sequelize");
 const createSchema = Joi.object({
   address: Joi.string().required(),
@@ -215,6 +215,14 @@ exports.markPaid = async (req, res) => {
   }
 
   await pickup.update({ status: "PAID" });
+  await LedgerEntry.create({
+  user_id: pickup.citizen_id,
+  pickup_id: pickup.id,
+  entry_type: "CREDIT",
+  amount: pickup.calculated_payout,
+  currency: "KES",
+  description: `Payout for pickup #${pickup.id}`
+});
 
   return res.json(pickup);
 };

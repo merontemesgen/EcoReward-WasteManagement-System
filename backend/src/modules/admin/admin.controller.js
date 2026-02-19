@@ -1,4 +1,5 @@
 const { Pickup, sequelize } = require("../../../models");
+const { LedgerEntry } = require("../../../models");
 
 exports.getMetrics = async (req, res) => {
   // counts by status
@@ -47,6 +48,26 @@ exports.getRecentPickups = async (req, res) => {
     ],
     order: [["updatedAt", "DESC"]],
     limit: 10
+  });
+
+  return res.json(rows);
+};
+exports.getLedgerAudit = async (req, res) => {
+  const limit = Math.min(Number(req.query.limit || 50), 200);
+
+  const rows = await LedgerEntry.findAll({
+    attributes: [
+      "id",
+      "user_id",
+      "pickup_id",
+      "entry_type",
+      "amount",
+      "currency",
+      "description",
+      "createdAt"
+    ],
+    order: [["createdAt", "DESC"]],
+    limit
   });
 
   return res.json(rows);
