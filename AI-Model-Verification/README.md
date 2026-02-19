@@ -47,15 +47,14 @@ dataset/
 
 ├── train/
 
-│   ├── glass/
+   │   ├── glass/
 
-│   ├── metal/
+   │   ├── metal/
 
-│   ├── paper/
+   │   ├── paper/
 
-│   └── plastic/
+   │   └── plastic/
 │
-
 └── validation/
 
    ├── glass/
