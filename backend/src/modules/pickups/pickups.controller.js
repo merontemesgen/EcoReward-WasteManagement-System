@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { Pickup, UnitPrice, LedgerEntry } = require("../../../models");
+const { Pickup, UnitPrice, LedgerEntry, User } = require("../../../models");
 const {Op} = require("sequelize");
 const createSchema = Joi.object({
   address: Joi.string().required(),
@@ -243,6 +243,15 @@ exports.markPaid = async (req, res) => {
   currency: "KES",
   description: `Payout for pickup #${pickup.id}`
 });
+  const pointsPerShilling = 1; // MVP ratio
+
+const earnedPoints = Math.floor(Number(pickup.calculated_payout) * pointsPerShilling);
+
+await User.increment(
+  { points: earnedPoints },
+  { where: { id: pickup.citizen_id } }
+);
+
 
   return res.json(pickup);
 };
