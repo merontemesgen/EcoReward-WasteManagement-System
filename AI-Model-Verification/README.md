@@ -42,7 +42,7 @@ The model currently classifies images into four waste categories:
 
 The dataset is organized using a directory-based structure compatible with Keras ImageDataGenerator.
 
-**dataset/
+dataset/
 │
 ├── train/
 
@@ -56,13 +56,13 @@ The dataset is organized using a directory-based structure compatible with Keras
 │
 └── validation/
 
-    **├── glass/
+   ├── glass/
     
-    ├── metal/
+   ├── metal/
     
-    ├── paper/
+   ├── paper/
     
-    └── plastic/**
+   └── plastic/
     
 
 **Dataset Size**
