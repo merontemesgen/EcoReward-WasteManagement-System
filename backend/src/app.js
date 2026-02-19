@@ -2,6 +2,11 @@ const cors=require("cors");
 const express = require("express");
 const app = express();
 const rateLimit = require("express-rate-limit");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const path = require("path");
+const swaggerDocument = YAML.load(path.join(__dirname, "../docs/openapi.yaml"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 app.use(express.json());
