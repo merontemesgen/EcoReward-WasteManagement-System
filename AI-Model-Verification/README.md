@@ -44,6 +44,7 @@ The dataset is organized using a directory-based structure compatible with Keras
 
 dataset/
 │
+
 ├── train/
 
 │   ├── glass/
@@ -54,6 +55,7 @@ dataset/
 
 │   └── plastic/
 │
+
 └── validation/
 
    ├── glass/
