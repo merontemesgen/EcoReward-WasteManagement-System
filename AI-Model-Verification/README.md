@@ -44,26 +44,17 @@ The dataset is organized using a directory-based structure compatible with Keras
 
 dataset/
 │
-
 ├── train/
-
-   │   ├── glass/
-
-   │   ├── metal/
-
-   │   ├── paper/
-
-   │   └── plastic/
+│   ├── glass/
+│   ├── metal/
+│   ├── paper/
+│   └── plastic/
 │
 └── validation/
-
-   ├── glass/
-    
-   ├── metal/
-    
-   ├── paper/
-    
-   └── plastic/
+    ├── glass/
+    ├── metal/
+    ├── paper/
+    └── plastic/
     
 
 **Dataset Size**
