@@ -37,6 +37,32 @@ exports.getMetrics = async (req, res) => {
 const total_paid_pickups = await Pickup.count({
   where: { status: "PAID" }
 });
+// 1) Total kg for key statuses
+const transferred_kg = await Pickup.sum("estimated_kg", { where: { status: "TRANSFERRED" } });
+const received_kg = await Pickup.sum("estimated_kg", { where: { status: "RECEIVED" } });
+
+// 2) Waste type distribution (counts)
+const wtCountRows = await Pickup.findAll({
+  attributes: ["waste_type", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
+  group: ["waste_type"]
+});
+
+const waste_type_counts = wtCountRows.reduce((acc, r) => {
+  acc[r.waste_type] = Number(r.get("count"));
+  return acc;
+}, {});
+
+// 3) Waste type distribution (kg)
+const wtKgRows = await Pickup.findAll({
+  attributes: ["waste_type", [sequelize.fn("SUM", sequelize.col("estimated_kg")), "kg"]],
+  group: ["waste_type"]
+});
+
+const waste_type_kg = wtKgRows.reduce((acc, r) => {
+  acc[r.waste_type] = Number(r.get("kg") || 0);
+  return acc;
+}, {});
+
 
 
   return res.json({
@@ -47,7 +73,12 @@ const total_paid_pickups = await Pickup.count({
     total_estimated_kg: Number(total_estimated_kg || 0),
     total_paid_pickups,
     total_ledger_entries,
-    total_credit_amount: Number(total_credit_amount || 0)
+    total_credit_amount: Number(total_credit_amount || 0),
+    transferred_kg: Number(transferred_kg || 0),
+    received_kg: Number(received_kg || 0),
+    waste_type_counts,
+    waste_type_kg,
+
   });
   
 };

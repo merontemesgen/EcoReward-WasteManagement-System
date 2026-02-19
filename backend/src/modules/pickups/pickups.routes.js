@@ -17,7 +17,7 @@ router.patch(
   requireRole("ADMIN", "COLLECTOR"),
   assignPickup
 );
-const { markCollected, markDelivered } = require("./pickups.controller");
+const { markCollected, markDelivered, markTransferred } = require("./pickups.controller");
 
 router.patch(
   "/:id/collect",
@@ -32,6 +32,14 @@ router.patch(
   requireRole("COLLECTOR"),
   markDelivered
 );
+
+router.patch(
+  "/:id/transfer",
+  auth,
+  requireRole("COLLECTOR"),
+  markTransferred
+);
+
 const { settlePickup } = require("./pickups.controller");
 
 router.patch(
@@ -40,9 +48,11 @@ router.patch(
   requireRole("ADMIN"),
   settlePickup
 );
+
 const { getPickupById } = require("./pickups.controller");
 const { markReceived } = require("./pickups.controller");
 const { markPaid } = require("./pickups.controller");
+
 const { listMyAssignedPickups } = require("./pickups.controller");
 const {cancelPickup} = require("./pickups.controller");
 

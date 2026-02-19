@@ -124,8 +124,8 @@ async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });
 
-  if (pickup.status !== "DELIVERED") {
-    return res.status(400).json({ message: "Pickup must be DELIVERED to settle" });
+  if (pickup.status !== "TRANSFERRED") {
+    return res.status(400).json({ message: "Pickup must be TRANSFERRED to settle" });
   }
 
   const rate = await UnitPrice.findOne({
@@ -182,6 +182,22 @@ exports.getPickupById = async (req, res) => {
 
   return res.status(403).json({ message: "Forbidden" });
 };
+exports.markTransferred = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  if (pickup.status !== "DELIVERED") {
+    return res.status(400).json({ message: "Pickup must be DELIVERED to mark as TRANSFERRED" });
+  }
+
+  // collector ownership check
+  if (pickup.collector_id !== req.user.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await pickup.update({ status: "TRANSFERRED" });
+  return res.json(pickup);
+};
 exports.markReceived = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });
@@ -201,6 +217,8 @@ exports.markReceived = async (req, res) => {
   return res.json(pickup);
   
 };
+
+
 exports.markPaid = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });

@@ -35,7 +35,7 @@ app.use(
   })
 );
 
-app.get("/health", (req, res) => {
+app.get("/api/v1/health", (req, res) => {
   res.json({ status: "ok", app: "backend" });
 });
 app.use("/api/v1/auth", require("./modules/auth/auth.routes"));
