@@ -205,7 +205,7 @@ export default function LandingPage() {
         Transforming everyday recyclables into dynamic rewards powered<br />
         by real-time demand intelligence.
       </p>
-      <button 
+      {/* <button 
         style={{
           width: "902px",
           height: "100px",
@@ -222,7 +222,31 @@ export default function LandingPage() {
         }}
       >
         Start Earning
-      </button>
+      </button> */}
+
+      <Link 
+  href="/auth/signup"
+  style={{
+    width: "902px",
+    height: "100px",
+    borderRadius: "32px",
+    backgroundColor: "#176B29",
+    color: "#FFFFFF",
+    fontFamily: "Commissioner",
+    fontWeight: 600,
+    fontSize: "24px",
+    marginTop: "48px",
+    border: "none",
+    cursor: "pointer",
+    padding: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none"
+  }}
+>
+  Start Earning
+</Link>
     </div>
   </div>
 </section>
@@ -592,25 +616,29 @@ export default function LandingPage() {
   </div>
 
   {/* Try It Out Button */}
-  <div style={{ textAlign: "center" }}>
-    <button 
-      style={{
-        width: "902px",
-        height: "100px",
-        borderRadius: "32px",
-        backgroundColor: "#B7E4C7",
-        color: "#176B29",
-        fontFamily: "Commissioner",
-        fontWeight: 600,
-        fontSize: "24px",
-        border: "none",
-        cursor: "pointer",
-        padding: "32px"
-      }}
-    >
-      Try It Out
-    </button>
-  </div>
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <Link 
+    href="/auth/signup"
+    style={{
+      width: "902px",
+      height: "100px",
+      borderRadius: "32px",
+      backgroundColor: "#B7E4C7",
+      color: "#176B29",
+      fontFamily: "Commissioner",
+      fontWeight: 600,
+      fontSize: "24px",
+      border: "none",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textDecoration: "none"
+    }}
+  >
+    Try It Out
+  </Link>
+</div>
 </section>
 
       {/* Footer */}
