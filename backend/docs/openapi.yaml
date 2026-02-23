@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: EcoReward API
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Pickups
+  - name: Pricing
+  - name: SME
+  - name: Admin
+  - name: Ledger
+  - name: AI
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user (default CITIZEN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+                password: { type: string }
+              required: [name, password]
+      responses:
+        "201": { description: Created }
+        "400": { description: Bad Request }
+        "409": { description: Conflict }
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                phone: { type: string }
+                password: { type: string }
+              required: [password]
+      responses:
+        "200": { description: OK }
+        "401": { description: Unauthorized }
+
+  /api/v1/users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+        "401": { description: Unauthorized }
+
+    /api/v1/pickups:
+    post:
+      tags: [Pickups]
+      summary: Create pickup request (Citizen)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address: { type: string }
+                waste_type: { type: string }
+                estimated_kg: { type: number }
+              required: [address, waste_type, estimated_kg]
+      responses:
+        "201": { description: Created }
+        "401": { description: Unauthorized }
+        "403": { description: Forbidden }
+
+  /api/v1/pickups/available:
+    get:
+      tags: [Pickups]
+      summary: List available pickups (Collector/Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+
+  /api/v1/pickups/{id}/assign:
+    patch:
+      tags: [Pickups]
+      summary: Assign pickup
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Assigned }  
+
+    /api/v1/pickups/{id}/collect:
+    patch:
+      tags: [Pickups]
+      summary: Mark as collected
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Collected }
+
+  /api/v1/pickups/{id}/deliver:
+    patch:
+      tags: [Pickups]
+      summary: Mark as delivered
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Delivered }
+
+  /api/v1/pickups/{id}/transfer:
+    patch:
+      tags: [Pickups]
+      summary: Transfer to recycling center
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Transferred }  
+    /api/v1/sme/pickups/{id}/settle:
+    patch:
+      tags: [SME]
+      summary: Settle pickup payout
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                material_type: { type: string }
+                unit_count: { type: integer }
+              required: [material_type, unit_count]
+      responses:
+        "200": { description: Settled }
+
+  /api/v1/sme/pickups/{id}/receive:
+    patch:
+      tags: [SME]
+      summary: Confirm receipt
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Received }
+
+  /api/v1/sme/pickups/{id}/pay:
+    patch:
+      tags: [SME]
+      summary: Mark as paid and generate ledger
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Paid }
+    /api/v1/admin/metrics:
+    get:
+      tags: [Admin]
+      summary: Get system metrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string }
+        - in: query
+          name: to
+          schema: { type: string }
+      responses:
+        "200": { description: Metrics }
+
+  /api/v1/admin/ledger:
+    get:
+      tags: [Admin]
+      summary: Audit ledger entries
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Ledger list }
+    /api/v1/me/ledger:
+    get:
+      tags: [Ledger]
+      summary: Get citizen ledger entries
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+
+  /api/v1/me/balance:
+    get:
+      tags: [Ledger]
+      summary: Get citizen balance
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+    /api/v1/ai/waste-suggest:
+    post:
+      tags: [AI]
+      summary: Suggest material type
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Suggestion }
+
+  /api/v1/ai/pickup-priority:
+    post:
+      tags: [AI]
+      summary: Return pickup priority score
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Priority score }

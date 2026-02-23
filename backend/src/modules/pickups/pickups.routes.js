@@ -9,14 +9,15 @@ const {
 } = require("./pickups.controller");
 
 const { assignPickup } = require("./pickups.controller");
-
+const { listMyPickupsSummary } = require("./pickups.controller");
+const { listMyAssignedPickupsSummary } = require("./pickups.controller");
 router.patch(
   "/:id/assign",
   auth,
   requireRole("ADMIN", "COLLECTOR"),
   assignPickup
 );
-const { markCollected, markDelivered } = require("./pickups.controller");
+const { markCollected, markDelivered, markTransferred } = require("./pickups.controller");
 
 router.patch(
   "/:id/collect",
@@ -31,6 +32,14 @@ router.patch(
   requireRole("COLLECTOR"),
   markDelivered
 );
+
+router.patch(
+  "/:id/transfer",
+  auth,
+  requireRole("COLLECTOR"),
+  markTransferred
+);
+
 const { settlePickup } = require("./pickups.controller");
 
 router.patch(
@@ -39,11 +48,32 @@ router.patch(
   requireRole("ADMIN"),
   settlePickup
 );
+
 const { getPickupById } = require("./pickups.controller");
 const { markReceived } = require("./pickups.controller");
 const { markPaid } = require("./pickups.controller");
-const { listMyAssignedPickups } = require("./pickups.controller");
 
+const { listMyAssignedPickups } = require("./pickups.controller");
+const {cancelPickup} = require("./pickups.controller");
+
+
+router.post("/", auth, requireRole("CITIZEN"), createPickup);
+router.get("/mine", auth, requireRole("CITIZEN"), listMyPickups);
+
+// Collector/Admin can see REQUESTED pickups
+router.get("/available", auth, requireRole("COLLECTOR", "ADMIN"), listAvailablePickups);
+
+// Admin can see everything
+router.get("/", auth, requireRole("ADMIN"), listAllPickups);
+
+router.get(
+  "/assigned/me",
+  auth,
+  requireRole("COLLECTOR"),
+  listMyAssignedPickups
+);
+router.get("/mine/summary", auth, requireRole("CITIZEN"), listMyPickupsSummary);
+router.get("/assigned/me/summary", auth, requireRole("COLLECTOR"), listMyAssignedPickupsSummary);
 
 router.get("/:id", auth, getPickupById);
 router.patch(
@@ -58,23 +88,11 @@ router.patch(
   requireRole("ADMIN"),
   markPaid
 );
-router.get(
-  "/assigned/me",
-  auth,
-  requireRole("COLLECTOR"),
-  listMyAssignedPickups
-);
+
+router.patch("/:id/cancel", auth, cancelPickup);
 
 
 
-router.post("/", auth, requireRole("CITIZEN"), createPickup);
-router.get("/mine", auth, requireRole("CITIZEN"), listMyPickups);
-
-// Collector/Admin can see REQUESTED pickups
-router.get("/available", auth, requireRole("COLLECTOR", "ADMIN"), listAvailablePickups);
-
-// Admin can see everything
-router.get("/", auth, requireRole("ADMIN"), listAllPickups);
 
 module.exports = router;
 

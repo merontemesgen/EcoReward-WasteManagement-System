@@ -1,6 +1,6 @@
 const Joi = require("joi");
-const { Pickup, UnitPrice } = require("../../../models");
-
+const { Pickup, UnitPrice, LedgerEntry, User } = require("../../../models");
+const {Op} = require("sequelize");
 const createSchema = Joi.object({
   address: Joi.string().required(),
   waste_type: Joi.string().required(),
@@ -11,6 +11,9 @@ const settleSchema = Joi.object({
   material_type: Joi.string().required(),
   unit_count: Joi.number().integer().positive().required()
 });
+
+
+
 
 exports.createPickup = async (req, res) => {
   const { error, value } = createSchema.validate(req.body);
@@ -121,8 +124,8 @@ async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });
 
-  if (pickup.status !== "DELIVERED") {
-    return res.status(400).json({ message: "Pickup must be DELIVERED to settle" });
+  if (pickup.status !== "TRANSFERRED") {
+    return res.status(400).json({ message: "Pickup must be TRANSFERRED to settle" });
   }
 
   const rate = await UnitPrice.findOne({
@@ -179,6 +182,22 @@ exports.getPickupById = async (req, res) => {
 
   return res.status(403).json({ message: "Forbidden" });
 };
+exports.markTransferred = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+  if (pickup.status !== "DELIVERED") {
+    return res.status(400).json({ message: "Pickup must be DELIVERED to mark as TRANSFERRED" });
+  }
+
+  // collector ownership check
+  if (pickup.collector_id !== req.user.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await pickup.update({ status: "TRANSFERRED" });
+  return res.json(pickup);
+};
 exports.markReceived = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });
@@ -187,10 +206,19 @@ exports.markReceived = async (req, res) => {
     return res.status(400).json({ message: "Pickup must be TRANSFERRED to mark as RECEIVED" });
   }
 
+  //settlement must exist before marking received; this is a safety check, normally should not fail if workflow is followed
+  if (!pickup.calculated_payout || !pickup.unit_count || !pickup.unit_price_snapshot) {
+  return res.status(400).json({ message: "Pickup must be settled before marking as RECEIVED" });
+}
+
+
   await pickup.update({ status: "RECEIVED" });
 
   return res.json(pickup);
+  
 };
+
+
 exports.markPaid = async (req, res) => {
   const pickup = await Pickup.findByPk(req.params.id);
   if (!pickup) return res.status(404).json({ message: "Pickup not found" });
@@ -198,13 +226,32 @@ exports.markPaid = async (req, res) => {
   if (pickup.status !== "RECEIVED") {
     return res.status(400).json({ message: "Pickup must be RECEIVED to mark as PAID" });
   }
-
+  
   // optional safety check: must have payout calculated
   if (!pickup.calculated_payout || Number(pickup.calculated_payout) <= 0) {
     return res.status(400).json({ message: "Cannot mark PAID without a valid payout" });
   }
+  const existing = await LedgerEntry.findOne({ where: { pickup_id: pickup.id } });
+  if (existing) return res.status(409).json({ message: "Pickup already paid" });
 
   await pickup.update({ status: "PAID" });
+  await LedgerEntry.create({
+  user_id: pickup.citizen_id,
+  pickup_id: pickup.id,
+  entry_type: "CREDIT",
+  amount: pickup.calculated_payout,
+  currency: "KES",
+  description: `Payout for pickup #${pickup.id}`
+});
+  const pointsPerShilling = 1; // MVP ratio
+
+const earnedPoints = Math.floor(Number(pickup.calculated_payout) * pointsPerShilling);
+
+await User.increment(
+  { points: earnedPoints },
+  { where: { id: pickup.citizen_id } }
+);
+
 
   return res.json(pickup);
 };
@@ -212,9 +259,26 @@ exports.listMyAssignedPickups = async (req, res) => {
   const where = { collector_id: req.user.id };
 
   //optional filter:active= true
-  if (req.query.active==="true") {
-    where.status = ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"];
-  }
+  
+
+if (req.query.active === "true") {
+  where[Op.and] = [
+    { status: ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"] },
+    {
+      [Op.or]: [
+        // allow normal in-progress work
+        { status: ["ASSIGNED", "COLLECTED", "DELIVERED"] },
+
+        // for settlement states, require payout exists
+        {
+          status: ["TRANSFERRED", "RECEIVED"],
+          calculated_payout: { [Op.ne]: null }
+        }
+      ]
+    }
+  ];
+}
+
   const pickups = await Pickup.findAll({
     where,
     order: [["updatedAt", "DESC"]]
@@ -222,7 +286,68 @@ exports.listMyAssignedPickups = async (req, res) => {
 
   return res.json(pickups);
 };
+exports.cancelPickup = async (req, res) => {
+  const pickup = await Pickup.findByPk(req.params.id);
+  if (!pickup) return res.status(404).json({ message: "Pickup not found" });
 
+  // CITIZEN: can cancel only own pickup, only when REQUESTED
+  if (req.user.role === "CITIZEN") {
+    if (pickup.citizen_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    if (pickup.status !== "REQUESTED") {
+      return res.status(400).json({ message: "Only REQUESTED pickups can be cancelled by citizen" });
+    }
+  }
+
+  // ADMIN: can cancel REQUESTED or ASSIGNED
+  if (req.user.role === "ADMIN") {
+    if (!["REQUESTED", "ASSIGNED"].includes(pickup.status)) {
+      return res.status(400).json({ message: "Only REQUESTED or ASSIGNED pickups can be cancelled by admin" });
+    }
+  }
+
+  // other roles cannot cancel
+  if (!["CITIZEN", "ADMIN"].includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await pickup.update({ status: "CANCELLED" });
+  return res.json(pickup);
+};
+
+const pickupSummaryFields = [
+  "id",
+  "address",
+  "waste_type",
+  "status",
+  "unit_count",
+  "calculated_payout",
+  "updatedAt",
+  "createdAt"
+];
+
+exports.listMyPickupsSummary = async (req, res) => {
+  const rows = await Pickup.findAll({
+    where: { citizen_id: req.user.id },
+    attributes: pickupSummaryFields,
+    order: [["updatedAt", "DESC"]]
+  });
+  return res.json(rows);
+};
+
+exports.listMyAssignedPickupsSummary = async (req, res) => {
+  const where = { collector_id: req.user.id };
+  if (req.query.active === "true") {
+    where.status = ["ASSIGNED", "COLLECTED", "DELIVERED", "TRANSFERRED", "RECEIVED"];
+  }
+  const rows = await Pickup.findAll({
+    where,
+    attributes: pickupSummaryFields,
+    order: [["updatedAt", "DESC"]]
+  });
+  return res.json(rows);
+};
 
 
 

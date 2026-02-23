@@ -1,6 +1,6 @@
 BASE URLs
-LOcal: http://localhost:4000
-Production:https://my domain(to be set by devops)
+LOcal: http://localhost:4000/api/v1
+Production:https://my domain/api/v1
 
 
 CORS CONFIG
@@ -11,11 +11,47 @@ AUTHENTICATION
 All endpoints require a JWT:
 Header:Authorization: Bearer<token>
 
-ROLES 
-Citizen
-Collector
-Admin
+POST /api/v1/auth/register
 
+POST /api/v1/auth/login
+
+GET /api/v1/users/me
+
+ROLES/auth
+Citizen
+POST /api/v1/auth/register
+
+POST /api/v1/auth/login
+
+GET /api/v1/users/me
+
+Collector
+GET /api/v1/pickups/available
+
+PATCH /api/v1/pickups/:id/assign
+
+PATCH /api/v1/pickups/:id/collect
+
+PATCH /api/v1/pickups/:id/deliver
+
+GET /api/v1/pickups/assigned/me
+
+GET /api/v1/pickups/assigned/me?active=true
+ 
+SME 
+PATCH /api/v1/sme/pickups/:id/settle
+
+PATCH /api/v1/sme/pickups/:id/receive
+
+PATCH /api/v1/sme/pickups/:id/pay
+
+PRICING
+POST /api/v1/pricing
+
+GET /api/v1/pricing
+
+Admin
+GET /api/v1/admin/metrics
 
 COMMON ERROR FROMAT
 json {"message":"..."}
@@ -31,7 +67,7 @@ SATATUS CODES
 
 
 1) Health
-GET /health
+GET /api/v1/health
 
 Public
 
@@ -40,7 +76,7 @@ Response 200
 { "status": "ok" }
 
 2) Authentication
-POST /auth/register
+POST /api/v1/auth/register
 Public
 Creates a user (default role: CITIZEN).
 Request Body
@@ -80,7 +116,7 @@ Errors
 
 
 
-POST /auth/login
+POST/api/v1/auth/login
 Public
 Returns JWT token.
 Request Body (email login)
@@ -137,8 +173,7 @@ Pickup Status Lifecycle
 Current enforced lifecycle:
 
 
-REQUESTED → ASSIGNED → COLLECTED → DELIVERED
-
+REQUESTED → ASSIGNED → COLLECTED → DELIVERED >TRANSFERRED >received >PAID
 
 (Next step) DELIVERED → CONFIRMED (Recycling Center)
 
@@ -425,6 +460,37 @@ TO be implemented:
 
 
 POST /pickups/:id/confirm (RECYCLING_CENTER): DELIVERED → CONFIRMED
+
+SME (ADMIN acting as SME)
+PATCH /sme/pickups/:id/settle
+
+Role: ADMIN
+DELIVERED → TRANSFERRED
+Stores:
+
+material_type
+
+unit_name
+
+unit_count
+
+unit_price_snapshot
+
+calculated_payout
+
+recycling_center_id
+
+PATCH/api/v1/sme/pickups/:id/receive
+
+Role: ADMIN
+TRANSFERRED → RECEIVED
+Requires settlement fields to exist
+
+PATCH/api/v1/sme/pickups/:id/pay
+
+Role: ADMIN
+RECEIVED → PAID
+Requires valid payout
 
 
 Rewards Ledger:
