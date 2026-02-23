@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
+import { Commissioner } from "next/font/google";
 import "./globals.css";
+
+const commissioner = Commissioner({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "EcoReward",
@@ -9,7 +15,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+      <body className={commissioner.className} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
