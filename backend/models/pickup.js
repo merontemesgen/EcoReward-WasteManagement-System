@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
     unit_count: DataTypes.INTEGER,
     unit_price_snapshot: DataTypes.DECIMAL(10, 2),
     calculated_payout: DataTypes.DECIMAL(10, 2),
+    ai_confidence_score: {
+    type: DataTypes.FLOAT,
+    allowNull: true
+    },
     status: DataTypes.STRING
   }, {
     sequelize,

@@ -5,9 +5,29 @@ const rateLimit = require("express-rate-limit");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const path = require("path");
-const swaggerDocument = YAML.load(path.join(__dirname, "../docs/openapi.yaml"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+const swaggerDocument = YAML.load(path.join(__dirname, "../docs/openapi.yaml"));
+
+const customCss = `
+  .topbar { display: none; }
+  .swagger-ui .info .title { font-size: 32px; }
+  .swagger-ui .scheme-container { box-shadow: none; border-radius: 12px; }
+  .swagger-ui .opblock { border-radius: 12px; }
+`;
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customSiteTitle: "EcoReward API Docs",
+    customCss,
+    swaggerOptions: {
+      docExpansion: "none",      // collapsed by default (clean)
+      defaultModelsExpandDepth: -1, // hides huge models panel
+      persistAuthorization: true // keeps token after refresh
+    }
+  })
+);
 
 app.use(express.json());
 
