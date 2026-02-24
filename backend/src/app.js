@@ -71,7 +71,7 @@ app.use("/api/v1/sme", require("./modules/sme/sme.routes"));
 app.use("/api/v1/pricing", require("./modules/pricing/pricing.routes"));
 app.use("/api/v1/auth", authLimiter, require("./modules/auth/auth.routes"));
 app.use("/api/v1", require("./modules/ledger/ledger.routes"));
-
+app.use("/api/v1/stats", require("./modules/stats/stats.routes"));
 
 app.use((err, req, res, next) => {
   console.error(err);
