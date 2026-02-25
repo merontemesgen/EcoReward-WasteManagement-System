@@ -1,0 +1,95 @@
+baseUrl= http://localhost:4000
+
+### Health
+GET http://localhost:4000/api/v1/health
+
+### Register (Citizen)
+POST http://localhost:4000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@mail.com",
+  "password": "password123"
+}
+
+### Login
+POST http://localhost:4000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@mail.com",
+  "password": "password123"
+}
+
+### Me
+GET http://localhost:4000/api/v1/users/me
+Authorization: Bearer {{token}}
+
+### Create pickup (Citizen)
+POST http://localhost:4000/api/v1/pickups
+Authorization: Bearer {{citizenToken}}
+Content-Type: application/json
+
+{
+  "address": "Kilimani",
+  "waste_type": "Plastic",
+  "estimated_kg": 2
+}
+
+### Available (Collector)
+GET http://localhost:4000/api/v1/pickups/available
+Authorization: Bearer {{collectorToken}}
+
+### Assign
+PATCH http://localhost:4000/api/v1/pickups/4/assign
+Authorization: Bearer {{collectorToken}}
+
+### Collect
+PATCH http://localhost:4000/api/v1/pickups/4/collect
+Authorization: Bearer {{collectorToken}}
+
+### Deliver
+PATCH http://localhost:4000/api/v1/pickups/4/deliver
+Authorization: Bearer {{collectorToken}}
+
+### Create unit price (Admin/SME)
+POST http://localhost:4000/api/v1/pricing
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "material_type": "Plastic",
+  "unit_name": "50L Sack",
+  "unit_price": 1.00
+}
+
+### Settle (SME alias)
+PATCH http://localhost:4000/api/v1/sme/pickups/4/settle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "material_type": "Plastic",
+  "unit_count": 3
+}
+
+### Receive (SME alias)
+PATCH http://localhost:4000/api/v1/sme/pickups/4/receive
+Authorization: Bearer {{adminToken}}
+
+### Pay (SME alias)
+PATCH http://localhost:4000/api/v1/sme/pickups/4/pay
+Authorization: Bearer {{adminToken}}
+
+### Collector dashboard (active)
+GET http://localhost:4000/api/v1/pickups/assigned/me?active=true
+Authorization: Bearer {{collectorToken}}
+
+### Admin metrics
+GET http://localhost:4000/api/v1/admin/metrics
+Authorization: Bearer {{adminToken}}
+
+### Admin recent
+GET http://localhost:4000/api/v1/admin/recent
+Authorization: Bearer {{adminToken}}
