@@ -11,6 +11,7 @@ const {
 const { assignPickup } = require("./pickups.controller");
 const { listMyPickupsSummary } = require("./pickups.controller");
 const { listMyAssignedPickupsSummary } = require("./pickups.controller");
+
 router.patch(
   "/:id/assign",
   auth,
@@ -55,10 +56,17 @@ const { markPaid } = require("./pickups.controller");
 
 const { listMyAssignedPickups } = require("./pickups.controller");
 const {cancelPickup} = require("./pickups.controller");
+const{ attachPickupImage } = require("./pickups.controller");
 
+const {
+  // ...existing exports
+  markCollectorEnRoute,
+  markCollectorArrived
+} = require("./pickups.controller");
 
 router.post("/", auth, requireRole("CITIZEN"), createPickup);
 router.get("/mine", auth, requireRole("CITIZEN"), listMyPickups);
+router.patch("/:id/image", auth, requireRole("CITIZEN", "COLLECTOR"), attachPickupImage);
 
 // Collector/Admin can see REQUESTED pickups
 router.get("/available", auth, requireRole("COLLECTOR", "ADMIN"), listAvailablePickups);
@@ -90,7 +98,18 @@ router.patch(
 );
 
 router.patch("/:id/cancel", auth, cancelPickup);
-
+router.patch(
+  "/:id/enroute",
+  auth,
+  requireRole("COLLECTOR"),
+  markCollectorEnRoute
+);
+router.patch(
+  "/:id/arrived",
+  auth,
+  requireRole("COLLECTOR"),
+  markCollectorArrived
+);
 
 
 

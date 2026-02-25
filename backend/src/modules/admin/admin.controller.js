@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { Pickup, sequelize } = require("../../../models");
 const { LedgerEntry } = require("../../../models");
 const { User } = require("../../../models");
+const { ImageVerificationLog } = require("../../../models");
 exports.getMetrics = async (req, res) => {
   try {
     const { from, to } = req.query;
@@ -207,7 +208,74 @@ const confidence_count = await Pickup.count({
 const average_ai_confidence = confidence_count
   ? Number((avg_confidence / confidence_count).toFixed(2))
   : 0;
+// ---- Route Optimization Confidence Metrics ----
 
+// Average per-pickup route confidence (only rows that have it)
+const avg_route_confidence_raw = await Pickup.findOne({
+  where: { ...dateFilter, route_confidence: { [Op.ne]: null } },
+  attributes: [[sequelize.fn("AVG", sequelize.col("route_confidence")), "avg"]],
+  raw: true
+});
+
+// Average batch confidence (only rows that have it)
+const avg_batch_confidence_raw = await Pickup.findOne({
+  where: { ...dateFilter, batch_confidence: { [Op.ne]: null } },
+  attributes: [[sequelize.fn("AVG", sequelize.col("batch_confidence")), "avg"]],
+  raw: true
+});
+
+// Count low confidence pickups (< 50)
+const low_confidence_pickups = await Pickup.count({
+  where: {
+    ...dateFilter,
+    route_confidence: { [Op.lt]: 50 }
+  }
+});
+
+// Count optimized pickups (has a batch_id OR sequence_no)
+const optimized_pickups = await Pickup.count({
+  where: {
+    ...dateFilter,
+    [Op.or]: [
+      { batch_id: { [Op.ne]: null } },
+      { sequence_no: { [Op.ne]: null } }
+    ]
+  }
+});
+
+// Convert AVG results safely (decimal precision)
+const avg_route_confidence = Number(
+  avg_route_confidence_raw?.avg ? Number(avg_route_confidence_raw.avg).toFixed(2) : 0
+);
+
+const avg_batch_confidence = Number(
+  avg_batch_confidence_raw?.avg ? Number(avg_batch_confidence_raw.avg).toFixed(2) : 0
+);
+
+// ---- Image Verification Metrics ----
+const total_verified_attempts = await ImageVerificationLog.count();
+
+const total_verified_true = await ImageVerificationLog.count({
+  where: { is_match: true }
+});
+
+const total_verified_false = await ImageVerificationLog.count({
+  where: { is_match: false }
+});
+
+const avg_image_verification_score_raw = await ImageVerificationLog.findOne({
+  attributes: [[sequelize.fn("AVG", sequelize.col("confidence_score")), "avg"]],
+  raw: true
+});
+
+const avg_image_verification_score = Number(
+  avg_image_verification_score_raw?.avg ? Number(avg_image_verification_score_raw.avg).toFixed(2) : 0
+);
+
+// Pickups currently flagged for review
+const pickups_needing_review = await Pickup.count({
+  where: { needs_review: true }
+});
     // ----------------------------
     // Final Response
     // ----------------------------
@@ -229,9 +297,18 @@ const average_ai_confidence = confidence_count
       hotspots,
       active_users,
       average_ai_confidence,
+      avg_route_confidence,
+      avg_batch_confidence,
+      low_confidence_pickups,
+      optimized_pickups,
       waste_type_counts,
       waste_type_kg,
-      waste_type_percent
+      waste_type_percent,
+      total_verified_attempts,
+      total_verified_true,
+      total_verified_false,
+      avg_image_verification_score,
+      pickups_needing_review
     });
 
   } catch (err) {
@@ -307,4 +384,101 @@ exports.getLedgerAudit = async (req, res) => {
   });
 
   return res.json(rows);
+};
+exports.getBatchPickups = async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 200);
+    const status = req.query.status || "REQUESTED";
+    const missing_zone = req.query.missing_zone === "1";
+    const missing_assignee = req.query.missing_assignee === "1";
+
+    const where = { status };
+
+    if (missing_zone) where.zone = null;
+    if (missing_assignee) where.collector_id = null;
+
+    const pickups = await Pickup.findAll({
+      where,
+      limit,
+      order: [["createdAt", "ASC"]],
+      attributes: [
+        "id",
+        "address",
+        "waste_type",
+        "estimated_kg",
+        "status",
+        "zone",
+        "collector_id",
+        "sequence_no",
+        "batch_id",
+        "createdAt"
+      ]
+    });
+
+    return res.json({ count: pickups.length, pickups });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+exports.applyBatchAssignments = async (req, res) => {
+  try {
+    const { batch_id, batch_confidence, updates } = req.body;
+
+    if (!batch_id || !Array.isArray(updates) || updates.length === 0) {
+      return res.status(400).json({ message: "batch_id and updates[] are required" });
+    }
+
+    const results = [];
+
+    for (const u of updates) {
+      const { pickup_id, zone, collector_id, sequence_no } = u;
+
+      if (!pickup_id || !collector_id) {
+        results.push({ pickup_id, ok: false, message: "pickup_id and collector_id required" });
+        continue;
+      }
+
+      const pickup = await Pickup.findByPk(pickup_id);
+      if (!pickup) {
+        results.push({ pickup_id, ok: false, message: "Pickup not found" });
+        continue;
+      }
+
+      if (pickup.status !== "REQUESTED") {
+        results.push({ pickup_id, ok: false, message: "Pickup must be REQUESTED" });
+        continue;
+      }
+
+      const route_confidence =
+       u.confidence_score !== undefined ? Number(u.confidence_score) : null;
+
+      const bc = batch_confidence !== undefined ? Number(batch_confidence) : null;
+
+      // confirm collector exists and is COLLECTOR
+      const collector = await User.findByPk(collector_id);
+      if (!collector || collector.role !== "COLLECTOR") {
+        results.push({ pickup_id, ok: false, message: "Invalid collector_id" });
+        continue;
+      }
+
+      await pickup.update({
+        zone: zone ?? pickup.zone,
+        collector_id,
+        sequence_no: sequence_no ?? pickup.sequence_no,
+        batch_id,
+        route_confidence,
+        batch_confidence: bc,
+        status: "ASSIGNED"
+      });
+
+      results.push({ pickup_id, ok: true, status: pickup.status, collector_id, zone: pickup.zone, sequence_no: pickup.sequence_no });
+    }
+
+    return res.json({ batch_id, results });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
 };

@@ -11,6 +11,49 @@ const settleSchema = Joi.object({
   material_type: Joi.string().required(),
   unit_count: Joi.number().integer().positive().required()
 });
+const imageSchema = Joi.object({
+  image_url: Joi.string().uri().required()
+});
+
+exports.attachPickupImage = async (req, res) => {
+  try {
+    const { error, value } = imageSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.message });
+
+    const pickup = await Pickup.findByPk(req.params.id);
+    if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+    // Ownership rules:
+    // - CITIZEN can attach image only to their pickup
+    // - COLLECTOR can attach image only to pickups assigned to them
+    if (req.user.role === "CITIZEN" && pickup.citizen_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (req.user.role === "COLLECTOR" && pickup.collector_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    // ADMIN can attach image too (optional)
+    if (!["CITIZEN", "COLLECTOR", "ADMIN"].includes(req.user.role)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await pickup.update({
+      image_url: value.image_url,
+      // Reset verification fields when image changes
+      image_verified: null,
+      image_verification_score: null,
+      image_verification_label: null,
+      image_verification_notes: null
+    });
+
+    return res.json(pickup);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
 
 
 
@@ -287,7 +330,8 @@ if (req.query.active === "true") {
 
   const pickups = await Pickup.findAll({
     where,
-    order: [["updatedAt", "DESC"]]
+    order: [["sequence_no", "ASC"],
+    ["createdAt", "ASC"]]
   });
 
   return res.json(pickups);
@@ -332,6 +376,75 @@ const pickupSummaryFields = [
   "updatedAt",
   "createdAt"
 ];
+exports.markCollectorEnRoute = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pickup = await Pickup.findByPk(id);
+    if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+    const isAdmin = req.user.role === "ADMIN";
+    const isCollector = req.user.role === "COLLECTOR";
+
+    if (!isAdmin && !isCollector) return res.status(403).json({ message: "Forbidden" });
+
+    // If collector, must be assigned to them
+    if (isCollector && pickup.collector_id !== req.user.id) {
+      return res.status(403).json({ message: "Not your pickup" });
+    }
+
+    if (pickup.status !== "ASSIGNED") {
+      return res.status(400).json({ message: "Pickup must be ASSIGNED first" });
+    }
+
+    pickup.tracking_status = "EN_ROUTE";
+    await pickup.save();
+
+    return res.json({ message: "Collector marked EN_ROUTE", pickup });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * PATCH /pickups/:id/arrive (Collector/Admin)
+ * Rule: pickup must be ASSIGNED and already EN_ROUTE (or allow direct ASSIGNED -> ARRIVED)
+ */
+exports.markCollectorArrived = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pickup = await Pickup.findByPk(id);
+    if (!pickup) return res.status(404).json({ message: "Pickup not found" });
+
+    const isAdmin = req.user.role === "ADMIN";
+    const isCollector = req.user.role === "COLLECTOR";
+
+    if (!isAdmin && !isCollector) return res.status(403).json({ message: "Forbidden" });
+
+    if (isCollector && pickup.collector_id !== req.user.id) {
+      return res.status(403).json({ message: "Not your pickup" });
+    }
+
+    if (pickup.status !== "ASSIGNED") {
+      return res.status(400).json({ message: "Pickup must be ASSIGNED first" });
+    }
+
+    // Strict (recommended)
+    if (pickup.tracking_status !== "EN_ROUTE") {
+      return res.status(400).json({ message: "Pickup must be EN_ROUTE before ARRIVED" });
+    }
+
+    pickup.tracking_status = "ARRIVED";
+    await pickup.save();
+
+    return res.json({ message: "Collector marked ARRIVED", pickup });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 exports.listMyPickupsSummary = async (req, res) => {
   const rows = await Pickup.findAll({

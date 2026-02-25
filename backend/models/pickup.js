@@ -29,6 +29,21 @@ module.exports = (sequelize, DataTypes) => {
     type: DataTypes.FLOAT,
     allowNull: true
     },
+    zone:{type: DataTypes.STRING, allowNull: true},
+    sequence_no:{type: DataTypes.INTEGER, allowNull: true},
+    batch_id:{type: DataTypes.STRING, allowNull: true},
+    route_confidence:{type: DataTypes.DECIMAL(5, 2), allowNull: true},
+    batch_confidence:{type: DataTypes.DECIMAL(5, 2), allowNull: true},
+    image_url: { type: DataTypes.STRING, allowNull: true },
+    image_verified: { type: DataTypes.BOOLEAN, allowNull: true },
+    image_verification_score: { type: DataTypes.DECIMAL(5, 2), allowNull: true },
+    image_verification_label: { type: DataTypes.STRING, allowNull: true },
+    image_verification_notes: { type: DataTypes.TEXT, allowNull: true },
+    needs_review: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    review_reason: { type: DataTypes.TEXT, allowNull: true },
+    tracking_status: DataTypes.ENUM("ASSIGNED", "EN_ROUTE", "ARRIVED"),
+    estimated_points: DataTypes.DECIMAL(10, 2),
+    verified_points: DataTypes.DECIMAL(10, 2),
     status: DataTypes.STRING
   }, {
     sequelize,
