@@ -26,7 +26,7 @@ export default function AIClassificationPage() {
   ];
 
   const handleBack = () => router.back();
-  const handleConfirmContinue = () => router.push('/pickup/location');
+  const handleConfirmContinue = () => router.push('/pickup/confirm');
   const handleRetakePhoto = () => router.push('/pickup/capture');
 
   const handleProgressClick = (stepNumber: number) => {
