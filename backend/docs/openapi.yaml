@@ -2,8 +2,12 @@ openapi: 3.0.3
 info:
   title: EcoReward API
   version: 1.0.0
+
 servers:
-  - url: http://localhost:4000
+  - url: https://eco-reward-backend.onrender.com/api/v1
+    description: Production
+  - url: http://localhost:4000/api/v1
+    description: Local Development
 
 tags:
   - name: Health
