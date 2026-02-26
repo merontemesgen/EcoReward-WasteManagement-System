@@ -1,0 +1,465 @@
+openapi: 3.0.3
+info:
+  title: EcoReward API
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Pickups
+  - name: Pricing
+  - name: SME
+  - name: Admin
+  - name: Ledger
+  - name: AI
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Pickup not found"
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+      example:
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        role: { type: string }
+        points: { type: integer, nullable: true }
+        createdAt: { type: string }
+      example:
+        id: 1
+        name: "Test User"
+        email: "test@mail.com"
+        phone: null
+        role: "CITIZEN"
+        points: 0
+        createdAt: "2026-02-13T08:03:21.000Z"
+
+    Pickup:
+      type: object
+      properties:
+        id: { type: integer }
+        citizen_id: { type: integer }
+        collector_id: { type: integer, nullable: true }
+        address: { type: string }
+        waste_type: { type: string }
+        estimated_kg: { type: number }
+        recycling_center_id: { type: integer, nullable: true }
+        material_type: { type: string, nullable: true }
+        unit_name: { type: string, nullable: true }
+        unit_count: { type: integer, nullable: true }
+        unit_price_snapshot: { type: string, nullable: true }
+        calculated_payout: { type: string, nullable: true }
+        status: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+      example:
+        id: 8
+        citizen_id: 1
+        collector_id: 2
+        address: "Ngong Rd"
+        waste_type: "Plastic"
+        estimated_kg: 2
+        recycling_center_id: 1
+        material_type: "Plastic"
+        unit_name: "50L Sack"
+        unit_count: 3
+        unit_price_snapshot: "1.00"
+        calculated_payout: "3.00"
+        status: "TRANSFERRED"
+        createdAt: "2026-02-18T16:04:51.000Z"
+        updatedAt: "2026-02-18T16:07:50.000Z"
+
+    LedgerEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        pickup_id: { type: integer }
+        entry_type: { type: string }
+        amount: { type: string }
+        currency: { type: string }
+        description: { type: string }
+        createdAt: { type: string }
+      example:
+        id: 1
+        user_id: 1
+        pickup_id: 8
+        entry_type: "CREDIT"
+        amount: "3.00"
+        currency: "KES"
+        description: "Payout for pickup #8"
+        createdAt: "2026-02-19T04:24:41.000Z"
+
+    Balance:
+      type: object
+      properties:
+        balance: { type: number }
+      example:
+        balance: 3
+
+    Metrics:
+      type: object
+      properties:
+        total_pickups: { type: integer }
+        counts_by_status: { type: object }
+        total_paid_payout: { type: number }
+        total_transferred_payout: { type: number }
+        total_estimated_kg: { type: number }
+        total_paid_pickups: { type: integer }
+        total_ledger_entries: { type: integer }
+        total_credit_amount: { type: number }
+        transferred_kg: { type: number }
+        received_kg: { type: number }
+        waste_type_counts: { type: object }
+        waste_type_kg: { type: object }
+      example:
+        total_pickups: 8
+        counts_by_status: { REQUESTED: 2, ASSIGNED: 1, RECEIVED: 1, PAID: 3, CANCELLED: 1 }
+        total_paid_payout: 9
+        total_transferred_payout: 0
+        total_estimated_kg: 15.5
+        total_paid_pickups: 3
+        total_ledger_entries: 2
+        total_credit_amount: 6
+        transferred_kg: 0
+        received_kg: 3
+        waste_type_counts: { Plastic: 3, Glass: 2, Paper: 3 }
+        waste_type_kg: { Plastic: 6.5, Glass: 6, Paper: 3 }
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user (default CITIZEN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+                password: { type: string }
+              required: [name, password]
+      responses:
+        "201": { description: Created }
+        "400": { description: Bad Request }
+        "409": { description: Conflict }
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                phone: { type: string }
+                password: { type: string }
+              required: [password]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /api/v1/users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /api/v1/pickups:
+    post:
+      tags: [Pickups]
+      summary: Create pickup request (Citizen)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address: { type: string }
+                waste_type: { type: string }
+                estimated_kg: { type: number }
+              required: [address, waste_type, estimated_kg]
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pickup"
+                
+  /api/v1/pickups/available:
+    get:
+      tags: [Pickups]
+      summary: List available pickups (Collector/Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+
+  /api/v1/pickups/{id}/assign:
+    patch:
+      tags: [Pickups]
+      summary: Assign pickup
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Assigned }
+
+  /api/v1/pickups/{id}/collect:
+    patch:
+      tags: [Pickups]
+      summary: Mark as collected
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Collected }
+
+  /api/v1/pickups/{id}/deliver:
+    patch:
+      tags: [Pickups]
+      summary: Mark as delivered
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Delivered }
+
+  /api/v1/pickups/{id}/transfer:
+    patch:
+      tags: [Pickups]
+      summary: Transfer to recycling center
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Transferred }
+  /api/v1/pricing:
+    get:
+      tags: [Pricing]
+      summary: List unit prices
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: OK }
+
+    post:
+      tags: [Pricing]
+      summary: Create or update unit price (Admin/SME)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                material_type: { type: string }
+                unit_name: { type: string }
+                unit_price: { type: number }
+              required: [material_type, unit_name, unit_price]
+      responses:
+        "201": { description: Created }
+        "200": { description: Updated }
+        "401": { description: Unauthorized }
+        "403": { description: Forbidden }
+  /api/v1/sme/pickups/{id}/settle:
+    patch:
+      tags: [SME]
+      summary: Settle pickup payout
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                material_type: { type: string }
+                unit_count: { type: integer }
+              required: [material_type, unit_count]
+      responses:
+        "200": { description: Settled }
+
+  /api/v1/sme/pickups/{id}/receive:
+    patch:
+      tags: [SME]
+      summary: Confirm receipt
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Received }
+
+  /api/v1/sme/pickups/{id}/pay:
+    patch:
+      tags: [SME]
+      summary: Mark as paid and generate ledger
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: Paid }
+
+  /api/v1/admin/metrics:
+    get:
+      tags: [Admin]
+      summary: Get system metrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string }
+        - in: query
+          name: to
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Metrics"
+  /api/v1/admin/ledger:
+    get:
+      tags: [Admin]
+      summary: Audit ledger entries
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Ledger list }
+
+  /api/v1/me/ledger:
+    get:
+      tags: [Ledger]
+      summary: Get citizen ledger entries
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntry"
+
+  /api/v1/me/balance:
+    get:
+      tags: [Ledger]
+      summary: Get citizen balance
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /api/v1/ai/waste-suggest:
+    post:
+      tags: [AI]
+      summary: Suggest material type
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Suggestion }
+
+  /api/v1/ai/pickup-priority:
+    post:
+      tags: [AI]
+      summary: Return pickup priority score
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Priority score } 
