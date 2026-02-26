@@ -1,13 +1,13 @@
-const { raw } = require("express");
-const { Ledgerentry, User, Sequelize } = require("../../../models");
+
+const { LedgerEntry, User, Sequelize } = require("../../../models");
 const { Op } = require ("sequelize");
 
 exports.getWeeklyLeaderboard = async (req, res) => {
-
+try {
     const since = new Date();
     since.setDate(since.getDate() - 7);
 
-    const rows = await Ledgerentry.findAll({
+    const rows = await LedgerEntry.findAll({
         where: {
             entry_type: "CREDIT",
             createdAt: { [Op.gte]: since }
@@ -29,11 +29,13 @@ exports.getWeeklyLeaderboard = async (req, res) => {
     const nameById = {};
     Object.fromEntries(users.map(u => [u.id, u.name]));
 
-    const result = rows.map(r => ({
+    return res.json(rows.map(r => ({
         user_id: r.user_id,
         name: nameById[r.user_id] || "User",
         points: Number(r.points || 0)
-    }));
-
-    return res.json(result);
+    })));
+} catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+}
 };

@@ -11,7 +11,7 @@ const tips = [
 ];
 
 router.get("/today", auth, (req, res) => {
-    const idx = newDate().getDate() % tips.length;
+    const idx = new Date().getDate() % tips.length;
     res.json({ tip: tips[idx] });
 });
 
