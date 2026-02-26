@@ -74,6 +74,8 @@ app.use("/api/v1", require("./modules/ledger/ledger.routes"));
 app.use("/api/v1/stats", require("./modules/stats/stats.routes"));
 app.use("/api/v1/ai", require("./modules/ai/ai.routes"));
 app.use("/api/v1/market", require("./modules/market/market.routes"));
+app.use("/api/v1/leaderboard", require("./modules/leaderboard/leaderboard.routes"));
+app.use("/api/v1/tips", require("./modules/tips/tips.routes"));
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ message: "Internal server error" });

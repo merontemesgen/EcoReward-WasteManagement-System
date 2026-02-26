@@ -105,7 +105,7 @@ router.patch(
   markCollectorEnRoute
 );
 router.patch(
-  "/:id/arrived",
+  "/:id/arrive",
   auth,
   requireRole("COLLECTOR"),
   markCollectorArrived
