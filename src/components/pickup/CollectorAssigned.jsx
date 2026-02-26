@@ -139,7 +139,7 @@ const CollectorAssigned = () => {
         {/* ── Left — Map placeholder ── */}
         <div className="relative rounded-2xl overflow-hidden shadow-sm border border-gray-200 h-96 bg-gray-100">
           <img
-            src="/assets/map-placeholder.png"
+            src="/assets/map-placeholder.jpg"
             alt="Live tracking map"
             className="w-full h-full object-cover"
           />
