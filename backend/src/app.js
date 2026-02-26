@@ -43,7 +43,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api/v1", apiLimiter);
 
-const allowedOrigins = ["http://localhost:3000", "http://ecoreward.vercel.app"];
+const allowedOrigins = ["https://localhost:3000", "https://ecoreward.vercel.app"];
 app.use(
   cors({
   origin: function (origin, callback) {
