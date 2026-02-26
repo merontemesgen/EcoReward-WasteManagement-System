@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SignUp from "./components/auth/SignUp";
 import Login from "./components/auth/Login";
 import ForgotPassword from "./components/auth/ForgotPassword";
+import SetLocation from "./components/pickup/SetLocation";
+import ScheduleTime from "./components/pickup/ScheduleTime";
+import CollectorAssigned from "./components/pickup/CollectorAssigned";
+import VerifyPickup from "./components/pickup/VerifyPickup";
 
 function App() {
   return (
@@ -14,6 +18,10 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/pickup/location" element={<SetLocation />} />
+        <Route path="/pickup/schedule" element={<ScheduleTime />} />
+        <Route path="/pickup/collector-assigned" element={<CollectorAssigned />} />
+        <Route path="/pickup/verify" element={<VerifyPickup />} />
 
         {/* Placeholder dashboard routes so navigation doesn't crash */}
         <Route
