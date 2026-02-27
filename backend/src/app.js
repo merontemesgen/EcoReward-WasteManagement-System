@@ -43,7 +43,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api/v1", apiLimiter);
 
-const allowedOrigins = ["http://localhost:3000", "http://ecoreward.vercel.app"];
+const allowedOrigins = ["http://localhost:3000","https://eco-reward-frontend-one.vercel.app", "https://ecoreward.vercel.app"];
 app.use(
   cors({
   origin: function (origin, callback) {
@@ -56,9 +56,12 @@ app.use(
         return callback(new Error("Not allowed by CORS"));
       }
     },
+    methods:["GET","POST","PUT","PATCH","DELETE", "OPTIONS"],
+    allowHeaders:["Content-Type","Authorization"],
     credentials: true
   })
 );
+
 
 app.get("/api/v1/health", (req, res) => {
   res.json({ status: "ok", app: "backend" });

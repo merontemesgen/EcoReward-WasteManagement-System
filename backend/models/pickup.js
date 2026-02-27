@@ -32,6 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     zone:{type: DataTypes.STRING, allowNull: true},
     sequence_no:{type: DataTypes.INTEGER, allowNull: true},
     batch_id:{type: DataTypes.STRING, allowNull: true},
+    route_order:{type: DataTypes.INTEGER, allowNull: true},
+    eta_minutes:{type: DataTypes.INTEGER, allowNull: true},
     route_confidence:{type: DataTypes.DECIMAL(5, 2), allowNull: true},
     batch_confidence:{type: DataTypes.DECIMAL(5, 2), allowNull: true},
     image_url: { type: DataTypes.STRING, allowNull: true },
