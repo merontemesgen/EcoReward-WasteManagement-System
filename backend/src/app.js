@@ -43,7 +43,9 @@ const apiLimiter = rateLimit({
 
 app.use("/api/v1", apiLimiter);
 
-const allowedOrigins = ["https://localhost:3000", "https://ecoreward.vercel.app"];
+
+const allowedOrigins = ["http://localhost:3000","https://eco-reward-frontend-one.vercel.app", "https://ecoreward.vercel.app"];
+
 app.use(
   cors({
   origin: function (origin, callback) {
@@ -56,9 +58,12 @@ app.use(
         return callback(new Error("Not allowed by CORS"));
       }
     },
+    methods:["GET","POST","PUT","PATCH","DELETE", "OPTIONS"],
+    allowHeaders:["Content-Type","Authorization"],
     credentials: true
   })
 );
+
 
 app.get("/api/v1/health", (req, res) => {
   res.json({ status: "ok", app: "backend" });
@@ -74,6 +79,8 @@ app.use("/api/v1", require("./modules/ledger/ledger.routes"));
 app.use("/api/v1/stats", require("./modules/stats/stats.routes"));
 app.use("/api/v1/ai", require("./modules/ai/ai.routes"));
 app.use("/api/v1/market", require("./modules/market/market.routes"));
+app.use("/api/v1/leaderboard", require("./modules/leaderboard/leaderboard.routes"));
+app.use("/api/v1/tips", require("./modules/tips/tips.routes"));
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ message: "Internal server error" });
