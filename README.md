@@ -1,107 +1,62 @@
-# 🌍 EcoReward System
+# EcoReward Backend
 
-## Executive Summary
+Backend service for the Waste-to-Wealth platform (SDG 11 – Sustainable Cities and Communities).
 
-EcoReward is a full-stack CivTech platform designed to incentivize sustainable waste management through a secure, scalable, and cloud-hosted reward system. The project integrates multiple technical departments under a structured DevOps framework to ensure reliability, security, and production readiness.
+## Tech Stack
 
-This repository serves as the central collaboration hub for all departments.
-
----
-
-## System Architecture
-
-The system follows a cloud-native architecture:
-
-Users  
-↓  
-Frontend Application (Vercel)  
-↓  
-Backend API Services (Render)  
-↓  
-PostgreSQL Database (Render)  
-
-CI/CD pipelines are managed using GitHub Actions for automated build and deployment workflows.
-
-Architecture documentation is available in the `/architecture` directory.
+- Node.js
+- Express
+- Sequelize ORM
+- MySQL
+- JWT Authentication
 
 ---
 
-## Technology Stack
+## Environment Variables
 
-Frontend  
-- React / Next.js  
+Required:
 
-Backend  
-- Node.js / Express  
+- PORT
+- DB_HOST
+- DB_USER
+- DB_PASSWORD
+- DB_NAME
+- DB_DIALECT
+- JWT_SECRET
 
-Database  
-- PostgreSQL  
-
-DevOps & Infrastructure  
-- GitHub (Version Control & Collaboration)  
-- GitHub Actions (CI/CD Automation)  
-- Render (Backend & Database Hosting)  
-- Vercel (Frontend Hosting)  
+See `.env.example` for template.
 
 ---
 
-## Branching & Collaboration Model
+## Running Locally
 
-The repository follows a structured Git workflow:
+1. Install dependencies:
+   npm install
 
-- `main` → Production-ready stable release  
-- `develop` → Integration branch for tested features  
-- Department branches → Controlled collaboration environments  
-- `feature/*` → Individual task-based development branches  
+2. Run migrations:
+   npx sequelize-cli db:migrate
 
-All code changes require Pull Requests and review before merging into protected branches.
+3. Start server:
+   npm run dev
 
----
-
-## Security & Configuration Management
-
-- All sensitive credentials are managed via secure environment variables.
-- `.env` files are excluded from version control.
-- Security reviews are conducted before production deployment.
-- Branch protection rules enforce controlled merging.
+Server runs on:
+http://localhost:5000
 
 ---
 
-## Deployment Strategy
+## Core Backend Systems
 
-Frontend: Vercel  
-Backend: Render  
-Database: PostgreSQL (Render Managed Service)  
-
-Production and staging URLs will be documented upon deployment.
-
----
-
-## DevOps Governance
-
-- Protected `main` and `develop` branches  
-- Pull Request approvals required  
-- CI/CD automation enforced  
-- Repository access managed through role-based permissions  
-- Continuous monitoring and log inspection during integration  
+- Authentication & Role-Based Access Control
+- Pickup Lifecycle State Machine
+- Rewards Ledger System
+- REST API for frontend integration
 
 ---
 
-## Team Collaboration Structure
+## API Contract
 
-Departments collaborating in this repository:
+See:
+`/docs/api-contract.md`
 
-- Frontend Engineering  
-- Backend Engineering  
-- DevOps Engineering  
-- Cybersecurity  
-- Data Science / AI  
-- Project Management  
 
-Each department operates within structured branching guidelines to ensure integration stability.
-
----
-
-## Delivery Model
-
-The project follows a sprint-based roadmap aligned with milestone-driven submission requirements.
+Last updated:2026-02-14
