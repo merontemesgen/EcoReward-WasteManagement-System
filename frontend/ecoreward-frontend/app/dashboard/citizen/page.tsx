@@ -2,25 +2,51 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function CitizenDashboard() {
+/**
+ * POINTS INTEGRATION NOTE FOR TEAM:
+ * ─────────────────────────────────
+ * This component accepts an optional `pointsBalance` prop.
+ * After your waste confirmation page verifies the pickup, pass
+ * the updated balance (1345) into this component via:
+ *
+ *   Option A — Props (recommended for now):
+ *     <CitizenDashboard pointsBalance={1345} weeklyGain={225} totalPoints={7402} />
+ *
+ *   Option B — Global state (Context / Zustand / Redux):
+ *     Read from your shared store instead of hardcoding.
+ *
+ * Default values show the pre-confirmation state (1245 pts).
+ */
+
+interface CitizenDashboardProps {
+  pointsBalance?: number;
+  weeklyGain?: number;
+  totalPoints?: number;
+}
+
+export default function CitizenDashboard({
+  pointsBalance = 1245,
+  weeklyGain = 125,
+  totalPoints = 7302,
+}: CitizenDashboardProps) {
   const user = {
     name: "Olumide Charles B",
     initials: "OC",
-    points: 1345,
-    weeklyGain: 125,
+    points: pointsBalance,
+    weeklyGain: weeklyGain,
   };
 
   const stats = {
     recycled: "32.8kg",
     pickups: 9,
-    totalPoints: 7302,
+    totalPoints: totalPoints,
   };
 
   return (
     <div style={{ width: "1440px", minHeight: "100vh", backgroundColor: "#FEF9EB", margin: "0 auto" }}>
-      
+
       {/* Welcome Section with Gradient */}
-      <div 
+      <div
         style={{
           width: "1440px",
           height: "472px",
@@ -31,18 +57,18 @@ export default function CitizenDashboard() {
           overflow: "hidden",
         }}
       >
-        {/* Welcome Header Row - Contains user info and notification bell */}
-        <div 
+        {/* Welcome Header Row */}
+        <div
           style={{
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
-            padding: "58px 24px 0"
+            padding: "58px 24px 0",
           }}
         >
           {/* Left - Avatar and Welcome Text */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div 
+            <div
               style={{
                 width: "80px",
                 height: "80px",
@@ -61,27 +87,26 @@ export default function CitizenDashboard() {
             >
               {user.initials}
             </div>
-            
             <div>
-              <h1 
+              <h1
                 style={{
                   fontFamily: "Commissioner",
                   fontWeight: 500,
                   fontSize: "64px",
                   color: "#FFFFFF",
                   margin: 0,
-                  lineHeight: "1"
+                  lineHeight: "1",
                 }}
               >
                 Welcome,
               </h1>
-              <p 
+              <p
                 style={{
                   fontFamily: "Commissioner",
                   fontWeight: 500,
                   fontSize: "32px",
                   color: "#296049",
-                  margin: "8px 0 0"
+                  margin: "8px 0 0",
                 }}
               >
                 {user.name}
@@ -90,17 +115,19 @@ export default function CitizenDashboard() {
           </div>
 
           {/* Right - Notification Bell */}
-          <div style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "50%",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            transition: "background-color 0.2s ease",
-          }}>
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "background-color 0.2s ease",
+            }}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="#176B29" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="#176B29" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -109,7 +136,7 @@ export default function CitizenDashboard() {
         </div>
 
         {/* EcoWallet */}
-        <div 
+        <div
           style={{
             width: "calc(100% - 48px)",
             height: "114px",
@@ -139,13 +166,11 @@ export default function CitizenDashboard() {
             <p style={{ fontFamily: "Commissioner", fontWeight: 700, fontSize: "36px", color: "#FFFFFF", margin: 0 }}>
               {user.points} Points
             </p>
-            
-            {/* Transactions Link */}
-            <Link 
-              href="#" 
-              style={{ 
-                fontFamily: "Commissioner", 
-                fontSize: "16px", 
+            <Link
+              href="#"
+              style={{
+                fontFamily: "Commissioner",
+                fontSize: "16px",
                 fontWeight: 500,
                 color: "#FFFFFF",
                 textDecoration: "none",
@@ -163,7 +188,6 @@ export default function CitizenDashboard() {
 
           {/* Right - Weekly gain + Redeem */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "12px" }}>
-            {/* +125 this week */}
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M2 12L6 8L9 11L14 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -172,8 +196,8 @@ export default function CitizenDashboard() {
                 +{user.weeklyGain} this week
               </p>
             </div>
-            
-            {/* Redeem button - now a clickable Link */}
+
+            {/* ✅ Redeem - navigates to Points Redemption (partner's page) */}
             <Link
               href="/points/redeem"
               style={{
@@ -200,10 +224,10 @@ export default function CitizenDashboard() {
 
       {/* Content Below */}
       <div style={{ padding: "24px" }}>
-        
-        {/* Request Pickup Button */}
-        <Link 
-          href="/dashboard/citizen/request-pickup"
+
+        {/* ✅ Request Pickup - navigates to Location Page (partner's page) */}
+        <Link
+          href="/pickup/location"
           style={{
             width: "1348px",
             height: "100px",
@@ -220,7 +244,7 @@ export default function CitizenDashboard() {
             alignItems: "center",
             justifyContent: "center",
             textDecoration: "none",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
           }}
         >
           Request Pickup
@@ -324,7 +348,7 @@ export default function CitizenDashboard() {
                 <p style={{ fontFamily: "Commissioner", fontWeight: 500, fontSize: "16px", color: "#000", margin: 0 }}>You</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <p style={{ fontFamily: "Commissioner", fontWeight: 600, fontSize: "16px", color: "#F97316", margin: 0 }}>980 points</p>
+                <p style={{ fontFamily: "Commissioner", fontWeight: 600, fontSize: "16px", color: "#F97316", margin: 0 }}>{user.points} points</p>
                 <div style={{ width: "24px", height: "24px", position: "relative" }}>
                   <Image src="https://customer-assets.emergentagent.com/job_eco-join/artifacts/lnj7lke1_Icon.png" alt="Trophy" fill className="object-contain" />
                 </div>
