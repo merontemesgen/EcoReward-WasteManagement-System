@@ -119,7 +119,7 @@ const CollectorAssigned = () => {
     );
     if (confirmed) {
       // TODO: call PUT /api/pickups/:id/cancel
-      navigate("/dashboard");
+      navigate("/dashboard/citizen");
     }
   };
 

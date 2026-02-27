@@ -44,7 +44,7 @@ const Login = () => {
       } else if (response.user?.userType === "admin") {
         navigate("/admin/dashboard");
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard/citizen");
       }
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");

@@ -55,7 +55,7 @@ const SignUp = () => {
         localStorage.setItem("token", response.token);
       }
 
-      navigate("/dashboard");
+      navigate("/dashboard/citizen");
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

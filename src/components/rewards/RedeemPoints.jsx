@@ -44,7 +44,7 @@ const RedeemPoints = () => {
 
   const handleSubmit = () => {
     if (!isValid) return;
-    navigate("/redeem/success", {
+    navigate("/points/complete", {
       state: {
         type: method === "airtime" ? "Airtime" : "Cash Out",
         amount: `$${amount}`,
