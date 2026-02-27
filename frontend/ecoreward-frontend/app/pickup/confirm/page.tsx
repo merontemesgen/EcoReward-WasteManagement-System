@@ -18,9 +18,15 @@ export default function WasteConfirmationPage() {
     { number: 9, label: 'Complete', completed: false },
   ];
 
-  const handleBack = () => router.back();
-  const handleContinueToLocation = () => router.push('/pickup/location');
+  // ✅ Back - goes to AI Classification page
+  const handleBack = () => router.push('/pickup/review');
+
+  // ✅ Continue to Location - goes to Location Confirmation (partner's page)
+  const handleContinueToLocation = () => router.push('/pickup/location-confirm');
+
+  // ✅ Edit button - goes back to AI Classification
   const handleEdit = () => router.push('/pickup/review');
+
   const handleProgressClick = (stepNumber: number) => {
     if (stepNumber === 1 || stepNumber === 2) router.push('/pickup/sort');
     else if (stepNumber === 3) router.push('/pickup/capture');
@@ -88,10 +94,8 @@ export default function WasteConfirmationPage() {
 
         {/* Left Content */}
         <div style={{
-        //   flex: 1,
           width: '739px',
-          flexShrink: '0',
-        //   minWidth: 0,
+          flexShrink: 0,
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',

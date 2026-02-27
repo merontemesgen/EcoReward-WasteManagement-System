@@ -21,13 +21,13 @@ export default function CapturePhotoPage() {
     { number: 9, label: 'Complete', completed: false },
   ];
 
+  // ✅ Back - goes to Sorting page
   const handleBack = () => {
-    router.back();
+    router.push('/pickup/sort');
   };
 
+  // ✅ After capture/upload - goes to AI Classification / Review
   const handleCapturePhoto = () => {
-    // In a real app, this would open camera
-    // For now, simulate capture or navigate to next step
     router.push('/pickup/review');
   };
 
@@ -71,6 +71,32 @@ export default function CapturePhotoPage() {
       <div style={{
         padding: '40px 78px',
       }}>
+        {/* Back Button */}
+        <button
+          onClick={handleBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '16px',
+            color: '#1C1917',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            transition: 'background-color 0.2s ease',
+            marginBottom: '24px',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F4'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="#1C1917" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
+        </button>
+
         {/* Title Section */}
         <div style={{
           marginBottom: '24px',
@@ -124,7 +150,8 @@ export default function CapturePhotoPage() {
             }}
           />
         </div>
-  {/* Middle Section - Camera Frame */}
+
+        {/* Middle Section - Camera Frame */}
         <div style={{
           width: '400px',
           height: '533px',
@@ -135,7 +162,7 @@ export default function CapturePhotoPage() {
           flexShrink: 0,
           overflow: 'hidden',
         }}>
-          {/* Camera Preview Area - Takes remaining space and centers content */}
+          {/* Camera Preview Area */}
           <div style={{
             flex: 1,
             display: 'flex',
@@ -161,8 +188,8 @@ export default function CapturePhotoPage() {
               />
             ) : (
               <>
-                {/* Camera Icon - Clickable */}
-                <div 
+                {/* Camera Icon */}
+                <div
                   style={{
                     width: '80px',
                     height: '80px',
@@ -185,7 +212,6 @@ export default function CapturePhotoPage() {
                   </svg>
                 </div>
 
-                {/* Position text */}
                 <p style={{
                   fontSize: '16px',
                   color: '#78716C',
@@ -197,7 +223,7 @@ export default function CapturePhotoPage() {
             )}
           </div>
 
-          {/* Buttons Container - Fixed at bottom */}
+          {/* Buttons Container */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -241,7 +267,6 @@ export default function CapturePhotoPage() {
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
             >
-              {/* Camera Icon */}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <circle cx="12" cy="13" r="4" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -285,7 +310,6 @@ export default function CapturePhotoPage() {
             </button>
           </div>
         </div>
-
 
         {/* Right Side - Progress Sidebar */}
         <div style={{
@@ -334,13 +358,12 @@ export default function CapturePhotoPage() {
                 }}
                 data-testid={`progress-step-${step.number}`}
               >
-                {/* Step Number/Checkmark */}
                 <div style={{
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
-                  backgroundColor: step.completed 
-                    ? '#10B981' 
+                  backgroundColor: step.completed
+                    ? '#10B981'
                     : (step.active ? '#FFF8F3' : '#F5F5F4'),
                   display: 'flex',
                   alignItems: 'center',
@@ -363,7 +386,6 @@ export default function CapturePhotoPage() {
                   )}
                 </div>
 
-                {/* Step Label */}
                 <span style={{
                   fontSize: '14px',
                   fontWeight: step.completed ? '600' : '400',

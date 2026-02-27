@@ -25,8 +25,13 @@ export default function AIClassificationPage() {
     { number: 9, label: 'Complete', completed: false },
   ];
 
-  const handleBack = () => router.back();
+  // ✅ Back - goes to Capture Photo page
+  const handleBack = () => router.push('/pickup/capture');
+
+  // ✅ Confirm & Continue - goes to Waste Confirmation
   const handleConfirmContinue = () => router.push('/pickup/confirm');
+
+  // ✅ Retake Photo - goes back to Capture
   const handleRetakePhoto = () => router.push('/pickup/capture');
 
   const handleProgressClick = (stepNumber: number) => {
