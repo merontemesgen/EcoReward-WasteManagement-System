@@ -61,7 +61,7 @@ const RedemptionSuccess = () => {
           <button
             onClick={() => navigate("/points/history")}
             className="w-full bg-green-800 hover:bg-green-900 text-white font-semibold py-3 rounded-2xl text-sm transition"
-          >
+          z>
             View Points History
           </button>
           <button

@@ -1,11 +1,11 @@
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
-
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  "https://eco-reward-backend.onrender.com/api/v1";
 
 const handleResponse = async (response) => {
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.message || 'Something went wrong');
+    throw new Error(data.message || "Something went wrong");
   }
   return data;
 };
@@ -14,9 +14,9 @@ export const authAPI = {
   // Register new user
   register: async (userData) => {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(userData),
     });
@@ -26,9 +26,9 @@ export const authAPI = {
   // Login user
   login: async (credentials) => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
     });
@@ -39,8 +39,20 @@ export const authAPI = {
   getMe: async (token) => {
     const response = await fetch(`${API_BASE_URL}/users/me`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
+    });
+    return handleResponse(response);
+  },
+
+  // Forgot password
+  forgotPassword: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
     return handleResponse(response);
   },
