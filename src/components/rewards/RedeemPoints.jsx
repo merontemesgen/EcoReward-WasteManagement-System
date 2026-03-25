@@ -1,5 +1,6 @@
+"use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Smartphone,
@@ -25,7 +26,7 @@ const QUICK_AMOUNTS = [5, 10, 20, 50];
 const mockUser = { name: "Charles", balance: 1345, phone: "+254880777" };
 
 const RedeemPoints = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [method, setMethod] = useState("airtime");
   const [pointsInput, setPointsInput] = useState("500");
   const [phone, setPhone] = useState(mockUser.phone);
@@ -44,20 +45,16 @@ const RedeemPoints = () => {
 
   const handleSubmit = () => {
     if (!isValid) return;
-    navigate("/points/complete", {
-      state: {
-        type: method === "airtime" ? "Airtime" : "Cash Out",
-        amount: `$${amount}`,
-        pointsUsed: points,
-      },
-    });
+    router.push(
+      `/points/complete?type=${method === "airtime" ? "Airtime" : "Cash Out"}&amount=${amount}&pointsUsed=${points}`,
+    );
   };
 
   return (
     <div className="min-h-screen bg-amber-50 px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back

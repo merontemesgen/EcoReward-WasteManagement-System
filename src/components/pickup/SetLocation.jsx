@@ -1,5 +1,6 @@
+"use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, Pencil, CheckCircle2, Circle } from "lucide-react";
 
 const steps = [
@@ -21,7 +22,7 @@ const expectedOutcome = {
 };
 
 const SetLocation = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [address, setAddress] = useState("123 Main Street, Apt 4B");
   const [city, setCity] = useState("Ilorin, 10001");
   const [instructions, setInstructions] = useState("");
@@ -29,14 +30,14 @@ const SetLocation = () => {
 
   const handleContinue = () => {
     // Navigate to next screen
-    navigate("/pickup/schedule");
+    router.push("/pickup/schedule");
   };
 
   return (
     <div className="min-h-screen bg-amber-50 p-4 md:p-8">
       {/* ── Back button ── */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm mb-6 transition"
       >
         <ArrowLeft className="w-4 h-4" />

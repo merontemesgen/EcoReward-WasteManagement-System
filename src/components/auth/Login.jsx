@@ -1,10 +1,12 @@
+"use client";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { authAPI } from "../../api";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,11 +42,11 @@ const Login = () => {
 
       // Redirect based on user role
       if (response.user?.userType === "collector") {
-        navigate("/collector/dashboard");
+        router.push("/collector/dashboard");
       } else if (response.user?.userType === "admin") {
-        navigate("/admin/dashboard");
+        router.push("/admin/dashboard");
       } else {
-        navigate("/dashboard/citizen");
+        router.push("/dashboard/citizen");
       }
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");
@@ -146,7 +148,7 @@ const Login = () => {
               {/* Forgot Password — right aligned under field */}
               <div className="text-right mt-1">
                 <Link
-                  to="/forgot-password"
+                  href="/forgot-password"
                   className="text-sm text-gray-500 hover:text-green-700 hover:underline"
                 >
                   forgot password?
@@ -211,7 +213,7 @@ const Login = () => {
           <p className="mt-5 text-center text-sm text-gray-500">
             Don't have an account?{" "}
             <Link
-              to="/signup"
+              href="/signup"
               className="text-gray-900 font-semibold hover:underline"
             >
               Sign Up

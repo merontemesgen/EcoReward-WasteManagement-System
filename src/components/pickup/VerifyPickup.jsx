@@ -1,5 +1,6 @@
+"use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -43,7 +44,7 @@ const verificationData = {
 };
 
 const VerifyPickup = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
@@ -57,7 +58,7 @@ const VerifyPickup = () => {
       // TODO: call PUT /api/pickups/:id/complete
       await new Promise((res) => setTimeout(res, 1200)); // simulate API call
       setConfirmed(true);
-      setTimeout(() => navigate("/pickup/complete"), 1000);
+      setTimeout(() => router.push("/dashboard/citizen"), 1000);
     } catch (err) {
       setConfirming(false);
     }
@@ -67,7 +68,7 @@ const VerifyPickup = () => {
     <div className="min-h-screen bg-amber-50 p-4 md:p-8">
       {/* ── Back button ── */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm mb-6 transition"
       >
         <ArrowLeft className="w-4 h-4" />

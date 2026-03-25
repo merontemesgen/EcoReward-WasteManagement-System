@@ -1,5 +1,6 @@
+"use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, Calendar, CheckCircle2, Circle } from "lucide-react";
 
 const steps = [
@@ -21,7 +22,7 @@ const expectedOutcome = {
 };
 
 const ScheduleTime = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [selectedOption, setSelectedOption] = useState("now"); // "now" or "later"
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
@@ -29,14 +30,14 @@ const ScheduleTime = () => {
 
   const handleConfirm = () => {
     // TODO: call POST /api/pickups/create with schedule data
-    navigate("/pickup/collector-assigned");
+    router.push("/pickup/collector-assigned");
   };
 
   return (
     <div className="min-h-screen bg-amber-50 p-4 md:p-8">
       {/* ── Back button ── */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm mb-6 transition"
       >
         <ArrowLeft className="w-4 h-4" />

@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
   "https://eco-reward-backend.onrender.com/api/v1";
 
 const handleResponse = async (response) => {

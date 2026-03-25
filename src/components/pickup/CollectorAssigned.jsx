@@ -1,5 +1,6 @@
+'use client';
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Clock,
@@ -78,7 +79,7 @@ const collector = {
 };
 
 const CollectorAssigned = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [stageIndex, setStageIndex] = useState(0);
   const [trackingSteps, setTrackingSteps] = useState([
@@ -119,7 +120,7 @@ const CollectorAssigned = () => {
     );
     if (confirmed) {
       // TODO: call PUT /api/pickups/:id/cancel
-      navigate("/dashboard/citizen");
+      router.push("/dashboard/citizen");
     }
   };
 
@@ -127,7 +128,7 @@ const CollectorAssigned = () => {
     <div className="min-h-screen bg-amber-50 p-4 md:p-6">
       {/* ── Back button ── */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm mb-4 transition"
       >
         <ArrowLeft className="w-4 h-4" />

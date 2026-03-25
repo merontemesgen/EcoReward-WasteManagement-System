@@ -1,5 +1,6 @@
+'use client';
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "nect/link";
 import { Mail } from "lucide-react";
 import { authAPI } from "../../api";
 
@@ -91,7 +92,7 @@ const ForgotPassword = () => {
               {/* Back to Sign In */}
               <div className="mt-6 text-center">
                 <Link
-                  to="/login"
+                  href="/auth/login"
                   className="text-sm text-green-700 hover:underline font-medium"
                 >
                   Back to Sign In
@@ -112,7 +113,7 @@ const ForgotPassword = () => {
                 Check your spam folder if you don't see it.
               </p>
               <Link
-                to="/login"
+                href="/auth/login"
                 className="text-sm text-green-700 hover:underline font-medium"
               >
                 Back to Sign In

@@ -1,10 +1,12 @@
+"use client";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { userRouter } from "next/navigation";
 import { Mail, User, Lock, Eye, EyeOff } from "lucide-react";
 import { authAPI } from "../../api";
 
 const SignUp = () => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,7 @@ const SignUp = () => {
         localStorage.setItem("token", response.token);
       }
 
-      navigate("/dashboard/citizen");
+      Router.push("/dashboard/citizen");
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

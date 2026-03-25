@@ -1,15 +1,16 @@
+'use client';
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const RedemptionSuccess = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const {
-    type = "Airtime",
-    amount = "$7",
-    pointsUsed = 700,
-  } = location.state || {};
+const router = useRouter();
+const searchParams = useSearchParams();
+const type = searchParams.get("type") || "Airtime";
+const amount = searchParams.get("amount")
+  ? `$${searchParams.get("amount")}`
+  : "$7";
+const pointsUsed = searchParams.get("pointsUsed") || 700;
 
   return (
     <div className="min-h-screen bg-amber-50 px-4 py-6">
@@ -59,13 +60,13 @@ const RedemptionSuccess = () => {
 
         <div className="flex flex-col gap-2 w-full">
           <button
-            onClick={() => navigate("/points/history")}
+            onClick={() => router.push("/points/history")}
             className="w-full bg-green-800 hover:bg-green-900 text-white font-semibold py-3 rounded-2xl text-sm transition"
           z>
             View Points History
           </button>
           <button
-            onClick={() => navigate("/dashboard/citizen")}
+            onClick={() => router.push("/dashboard/citizen")}
             className="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-2xl text-sm transition"
           >
             Back to Home
