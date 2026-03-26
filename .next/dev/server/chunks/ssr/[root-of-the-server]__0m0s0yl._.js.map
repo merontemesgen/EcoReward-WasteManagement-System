@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Nokuthula/Desktop/EcoReward-WasteManagement-System/EcoReward-WasteManagement-System/src/pages/get-started.js"],"sourcesContent":["import RoleSelection from \"../src/components/onboarding/RoleSelection\";\r\n\r\nexport default function GetStarted() {\r\n  return <RoleSelection />;\r\n}\r\n"],"names":["GetStarted","RoleSelection"],"mappings":";;;;;;;;;;;;AAEe,SAASA;IACtB,qBAAO,qKAACC;;;;;AACV"}}]
+}
