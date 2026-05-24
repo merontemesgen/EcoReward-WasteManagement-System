@@ -1,6 +1,36 @@
 const cors=require("cors");
 const express = require("express");
 const app = express();
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://eco-reward-frontend-one.vercel.app",
+  "https://eco-reward-waste-management-system.vercel.app",
+  "https://ecoreward.vercel.app"];
+app.use(
+  cors({
+  origin: function (origin, callback) {
+      // allow requests with no origin (like curl, Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods:["GET","POST","PUT","PATCH","DELETE", "OPTIONS"],
+    allowHeaders:["Content-Type","Authorization"],
+    
+  })
+);
+
+
+
+
+
+
+
 const rateLimit = require("express-rate-limit");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
@@ -14,7 +44,12 @@ const customCss = `
   .swagger-ui .scheme-container { box-shadow: none; border-radius: 12px; }
   .swagger-ui .opblock { border-radius: 12px; }
 `;
-
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -43,30 +78,13 @@ const apiLimiter = rateLimit({
 
 app.use("/api/v1", apiLimiter);
 
-const allowedOrigins = ["http://localhost:3000","https://eco-reward-frontend-one.vercel.app", "https://ecoreward.vercel.app"];
-app.use(
-  cors({
-  origin: function (origin, callback) {
-      // allow requests with no origin (like curl, Postman)
-      if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods:["GET","POST","PUT","PATCH","DELETE", "OPTIONS"],
-    allowHeaders:["Content-Type","Authorization"],
-    credentials: true
-  })
-);
 
 
 app.get("/api/v1/health", (req, res) => {
   res.json({ status: "ok", app: "backend" });
 });
-app.use("/api/v1/auth", require("./modules/auth/auth.routes"));
+
 app.use("/api/v1/users", require("./modules/users/users.routes"));
 app.use("/api/v1/admin", require("./modules/admin/admin.routes"));
 app.use("/api/v1/pickups", require("./modules/pickups/pickups.routes"));
